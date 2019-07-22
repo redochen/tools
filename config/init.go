@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	parameName     = "conf"
+	paramName      = "conf"
 	defaultCfgFile = "app.conf"
 	defaultSection = "DEFAULT"
 )
@@ -20,7 +20,7 @@ func init() {
 
 	Conf = new(Config)
 
-	flag.StringVar(&Conf.FilePath, parameName, defaultCfgFile, "Generic Config File")
+	flag.StringVar(&Conf.FilePath, paramName, defaultCfgFile, "Generic Config File")
 	flag.Parse()
 
 	if Conf.FilePath == "" {

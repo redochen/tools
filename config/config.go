@@ -1,9 +1,9 @@
 package config
 
 import (
-	. "ccutils/string"
 	"errors"
 	"github.com/larspensjo/config"
+	. "github.com/redochen/tools/string"
 )
 
 type Config struct {

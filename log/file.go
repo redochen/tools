@@ -1,9 +1,9 @@
 package log
 
 import (
-	. "ccutils/config"
 	"encoding/json"
 	"fmt"
+	. "github.com/redochen/tools/config"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	logFileOpton string = "logpath"
-	LogFileDir   string = "log"
+	logFileOpton = "logpath"
+	LogFileDir   = "log"
 )
 
 // FileLogWriter implements LoggerInterface.

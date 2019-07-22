@@ -2,10 +2,10 @@ package http
 
 import (
 	"bytes"
-	"ccutils/crypto"
 	"compress/gzip"
 	"errors"
 	"fmt"
+	. "github.com/redochen/tools/crypto"
 	"io"
 	"io/ioutil"
 	"net"
@@ -278,7 +278,7 @@ func HttpsBasicAuthorization(username, password string) (string, error) {
 		return "", nil
 	}
 
-	auth, err := crypto.NewBase64Helper().Encode([]byte(username + ":" + password))
+	auth, err := CcBase64.EncodeString(username + ":" + password)
 	if err != nil {
 		return "", err
 	}

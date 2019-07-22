@@ -1,9 +1,9 @@
 package log
 
 import (
-	. "ccutils/config"
 	"encoding/json"
 	"fmt"
+	. "github.com/redochen/tools/config"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"strconv"
@@ -28,8 +28,8 @@ func NewMongodbWriter() LoggerInterface {
 	}
 }
 
-func (this *MongodbWriter) SetId() {
-	c := this.Session.DB("log").C("lastid")
+func (w *MongodbWriter) SetId() {
+	c := w.Session.DB("log").C("lastid")
 	var d LastId
 	change := mgo.Change{
 		Update:    bson.M{"$inc": bson.M{"lastid": 200}},
@@ -42,53 +42,53 @@ func (this *MongodbWriter) SetId() {
 			LastId: 200,
 			Table:  tableName,
 		})
-		this.StartId = 1
-		this.EndId = 200
+		w.StartId = 1
+		w.EndId = 200
 	} else {
 		if d.LastId > 2e10 {
 			c.Update(bson.M{"table": tableName}, bson.M{"$set": bson.M{"lastid": 200}})
-			this.StartId = 1
-			this.EndId = 200
+			w.StartId = 1
+			w.EndId = 200
 		} else {
-			this.StartId = d.LastId - 200 + 1
-			this.EndId = d.LastId
+			w.StartId = d.LastId - 200 + 1
+			w.EndId = d.LastId
 		}
 
 	}
 }
 
-func (this *MongodbWriter) Init(level string) error {
+func (w *MongodbWriter) Init(level string) error {
 	var err error
-	this.Level, err = strconv.Atoi(level)
+	w.Level, err = strconv.Atoi(level)
 	return err
 }
 
-func (this *MongodbWriter) WriteMsg(msg string, level int) error {
-	if level > this.Level {
+func (w *MongodbWriter) WriteMsg(msg string, level int) error {
+	if level > w.Level {
 		return nil
 	}
 
-	if this.StartId == 0 || this.StartId >= this.EndId {
-		this.SetId()
+	if w.StartId == 0 || w.StartId >= w.EndId {
+		w.SetId()
 	} else {
-		this.StartId++
+		w.StartId++
 	}
 	var content interface{}
 	json.Unmarshal([]byte(msg), &content)
 	if content == nil {
 		content = msg
 	}
-	entity := NewLogEntity(this.StartId, level, content)
-	c := this.Session.DB("log").C(tableName)
+	entity := NewLogEntity(w.StartId, level, content)
+	c := w.Session.DB("log").C(tableName)
 	err := c.Insert(entity)
 	return err
 }
 
-func (this *MongodbWriter) Flush() {
+func (w *MongodbWriter) Flush() {
 	return
 }
 
-func (this *MongodbWriter) Destroy() {
+func (w *MongodbWriter) Destroy() {
 	return
 }
 

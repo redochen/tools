@@ -196,16 +196,16 @@ func (f *FileHelper) IsFile(path string) bool {
 }
 
 //读取文件
-func (f *FileHelper) ReadEx(buff []byte, offset int64, unzipfile bool) (int, error) {
+func (f *FileHelper) ReadEx(buff []byte, offset int64, unzipFile bool) (int, error) {
 	if f.Handle != nil {
-		if true == unzipfile {
+		if unzipFile {
 			gr, err := f.newGzipReader()
 			if err != nil {
 				return 0, err
 			}
+
 			defer gr.Close()
 			return gr.Read(buff)
-
 		} else {
 			if offset > 0 {
 				return f.Handle.ReadAt(buff, offset)
@@ -230,7 +230,7 @@ func (f *FileHelper) WriteStringEx(content string) (int, error) {
 //写入文件：zipFile - 是否压缩文件
 func (f *FileHelper) WriteEx(data []byte, offset int64, zipFile bool) (int, error) {
 	if f.Handle != nil {
-		if true == zipFile {
+		if zipFile {
 			gw, err := f.newGzipWriter()
 			if err != nil {
 				return 0, err
