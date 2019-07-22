@@ -8,7 +8,7 @@ import (
 
 var (
 	CcAes         = NewAesHelper()
-	defaultAesKey = "Weav3kDf5VxmuuwB"
+	defaultAesKey = "oO3OEFhB7ALGGzAm"
 	defaultAesIvs = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 )
 
@@ -21,9 +21,14 @@ func NewAesHelper() *AesHelper {
 	return &AesHelper{}
 }
 
-//AES加密
-func (h *AesHelper) Encrypt(plain string) ([]byte, error) {
+//AES加密字符串
+func (h *AesHelper) EncryptString(plain string) ([]byte, error) {
 	return h.EncryptEx(plain, nil, nil)
+}
+
+//AES加密
+func (h *AesHelper) Encrypt(plain, key string, iv []byte) ([]byte, error) {
+	return h.EncryptEx(plain, []byte(key), iv)
 }
 
 //AES加密
@@ -53,9 +58,14 @@ func (h *AesHelper) EncryptEx(plain string, key, iv []byte) ([]byte, error) {
 	return crypt, nil
 }
 
-//AES解密
-func (h *AesHelper) Decrypt(crypt []byte) (string, error) {
+//AES解密字符串
+func (h *AesHelper) DecryptString(crypt []byte) (string, error) {
 	return h.DecryptEx(crypt, nil, nil)
+}
+
+//AES解密
+func (h *AesHelper) Decrypt(crypt []byte, key string, iv []byte) (string, error) {
+	return h.DecryptEx(crypt, []byte(key), iv)
 }
 
 //AES解密
@@ -87,27 +97,26 @@ func (h *AesHelper) DecryptEx(crypt []byte, key, iv []byte) (string, error) {
 
 //获取AES加密KEY
 func getAesKey(key []byte) ([]byte, error) {
-	aesKey := key
-	if nil == aesKey {
-		aesKey = []byte(defaultAesKey)
-	} else {
-		keyLen := len(aesKey)
-		if keyLen != 16 && keyLen != 24 && keyLen != 32 {
-			return nil, errors.New("length of key must be 16, 24 or 32")
-		}
+	if nil == key {
+		return []byte(defaultAesKey), nil
 	}
+
+	aesKey := key
+	keyLen := len(aesKey)
+
+	if keyLen != 16 && keyLen != 24 && keyLen != 32 {
+		// 16 bytes for AES-128, 24 bytes for AES-192, 32 bytes for AES-256
+		return nil, errors.New("length of key must be 16, 24 or 32")
+	}
+
 	return aesKey, nil
 }
 
 //获取AES加密向量
 func getAesIv(iv []byte) []byte {
-	// 16 bytes for AES-128, 24 bytes for AES-192, 32 bytes for AES-256
-	aesIvs := iv
-	if nil == aesIvs {
-		ivTemps := []byte(defaultAesIvs)
-		aesIvs = ivTemps[:aes.BlockSize]
-	} else {
-		aesIvs = iv[:aes.BlockSize]
+	if iv != nil && len(iv) >= aes.BlockSize {
+		return iv[:aes.BlockSize]
 	}
-	return aesIvs
+
+	return defaultAesIvs[:aes.BlockSize]
 }

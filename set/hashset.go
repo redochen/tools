@@ -13,6 +13,7 @@ type Set interface {
 	Len() int
 	String() string
 }
+
 type HashSet struct {
 	m map[interface{}]bool
 }
@@ -20,6 +21,7 @@ type HashSet struct {
 func NewHashSet() *HashSet {
 	return &HashSet{m: make(map[interface{}]bool)}
 }
+
 func (set *HashSet) Add(e interface{}) bool {
 	if !set.m[e] {
 		set.m[e] = true
@@ -27,21 +29,27 @@ func (set *HashSet) Add(e interface{}) bool {
 	}
 	return false
 }
+
 func (set *HashSet) Remove(e interface{}) {
 	delete(set.m, e)
 }
+
 func (set *HashSet) Clear() {
 	set.m = make(map[interface{}]bool)
 }
+
 func (set *HashSet) Contains(e interface{}) bool {
 	return set.m[e]
 }
+
 func (set *HashSet) Len() int {
 	return len(set.m)
 }
+
 func (set *HashSet) String() string {
 	var buf bytes.Buffer
 	buf.WriteString("HashSet{")
+
 	first := true
 	for k := range set.m {
 		if first {
@@ -49,8 +57,11 @@ func (set *HashSet) String() string {
 		} else {
 			buf.WriteString(" ")
 		}
+
 		buf.WriteString(fmt.Sprintf("%v", k))
 	}
+
 	buf.WriteString("}")
+
 	return buf.String()
 }

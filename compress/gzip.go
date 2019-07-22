@@ -22,52 +22,64 @@ func NewGZipHelper() *GZipHelper {
 
 //压缩字符串（最好压缩比例）
 func (h *GZipHelper) BestZip(s string) ([]byte, error) {
-	return h.ZipEx([]byte(s), gzip.BestCompression)
+	return h.ZipData([]byte(s), gzip.BestCompression)
 }
 
 //压缩字符串（最快压缩速度）
-func (h *GZipHelper) FastestZip(s string) ([]byte, error) {
-	return h.ZipEx([]byte(s), gzip.BestSpeed)
+func (h *GZipHelper) FastZip(s string) ([]byte, error) {
+	return h.ZipData([]byte(s), gzip.BestSpeed)
 }
 
-//压缩
-func (h *GZipHelper) ZipEx(buffer []byte, level int) ([]byte, error) {
-	if nil == buffer || len(buffer) <= 0 {
+//压缩数据
+func (h *GZipHelper) ZipData(data []byte, level int) ([]byte, error) {
+	if nil == data || len(data) <= 0 {
 		return nil, errors.New("input buffer is nil or empty")
 	}
 
 	var b bytes.Buffer
-	gz, err := gzip.NewWriterLevel(&b, level)
+
+	w, err := gzip.NewWriterLevel(&b, level)
 	if err != nil {
 		return nil, err
 	}
 
-	defer gz.Close()
+	defer w.Close()
 
-	if _, err := gz.Write(buffer); err != nil {
+	if _, err := w.Write(data); err != nil {
 		return nil, err
 	}
 
-	if err := gz.Flush(); err != nil {
+	if err := w.Flush(); err != nil {
 		return nil, err
 	}
 
 	return b.Bytes(), nil
 }
 
-//解压缩
-func (h *GZipHelper) Unzip(buffer []byte) ([]byte, error) {
-	if nil == buffer || len(buffer) <= 0 {
+//解压缩字符串
+func (h *GZipHelper) Unzip(data []byte) (string, error) {
+	b, err := h.UnzipData(data)
+	if b != nil && len(b) > 0 {
+		return string(b), nil
+	} else {
+		return "", err
+	}
+}
+
+//解压缩数据
+func (h *GZipHelper) UnzipData(data []byte) ([]byte, error) {
+	if nil == data || len(data) <= 0 {
 		return nil, errors.New("input buffer is nil or empty")
 	}
 
-	b := bytes.NewBuffer(buffer)
-	gz, err := gzip.NewReader(b)
+	b := bytes.NewBuffer(data)
+
+	r, err := gzip.NewReader(b)
 	if err != nil {
 		return nil, err
 	}
 
-	defer gz.Close()
+	defer r.Close()
 
-	return ioutil.ReadAll(gz)
+	return ioutil.ReadAll(r)
 }

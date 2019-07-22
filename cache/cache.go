@@ -80,7 +80,7 @@ func (mc *memoryCache) getWithoutLock(key interface{}, del bool) interface{} {
 		}
 
 		if !item.isExpired() {
-			return item
+			return item.data
 		}
 	}
 
