@@ -2,7 +2,7 @@ package crypto
 
 import (
 	"crypto/md5"
-	"fmt"
+	"encoding/hex"
 )
 
 var (
@@ -23,6 +23,13 @@ func (h *MD5Helper) Sum(plain string) string {
 	if "" == plain {
 		return ""
 	}
-	data := []byte(plain)
-	return fmt.Sprintf("%x", md5.Sum(data))
+
+	d := []byte(plain)
+	//return fmt.Sprintf("%x", md5.Sum(d))
+
+	c := md5.New()
+	c.Write(d)
+	hash := c.Sum([]byte(""))
+
+	return hex.EncodeToString(hash)
 }

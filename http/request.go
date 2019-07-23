@@ -1,13 +1,11 @@
 package http
 
 import (
-	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -75,7 +73,7 @@ func (r *Request) DoEx() (string, []*http.Cookie, error) {
 		CheckRedirect: CheckRedirect,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Dial:            DialTimeout,
+			DialContext:     DialContext,
 		},
 	}
 
@@ -87,12 +85,8 @@ func (r *Request) DoEx() (string, []*http.Cookie, error) {
 
 	//转换POST数据
 	if r.PostData != nil && len(r.PostData) > 0 {
-		data := url.Values{}
-		for k, v := range r.PostData {
-			data.Set(k, v)
-		}
-
-		reader = bytes.NewBufferString(data.Encode())
+		qs := GetQueryString(r.PostData)
+		reader = strings.NewReader(qs)
 	} else if r.PostString != "" {
 		reader = strings.NewReader(r.PostString)
 	} else {

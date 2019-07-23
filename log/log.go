@@ -221,33 +221,67 @@ func (bl *BeeLogger) startLogger() {
 }
 
 // Log EMERGENCY level message.
-func (bl *BeeLogger) Emergency(title, message string) {
+func (bl *BeeLogger) Emerge(message string) {
 	bl.writerMsg(LevelEmergency, message)
 }
 
+// Log EMERGENCY level message.
+func (bl *BeeLogger) EmergeEx(title, format string, a ...interface{}) {
+	bl.Emerge(getFmtMessage(title, format, a...))
+}
+
 // Log CRITICAL level message.
-func (bl *BeeLogger) Critical(title, message string) {
+func (bl *BeeLogger) Critical(message string) {
 	bl.writerMsg(LevelCritical, message)
 }
 
+// Log CRITICAL level message.
+func (bl *BeeLogger) CriticalEx(title, format string, a ...interface{}) {
+	bl.Critical(getFmtMessage(title, format, a...))
+}
+
 // Log ERROR level message.
-func (bl *BeeLogger) Error(title, message string) {
+func (bl *BeeLogger) Error(message string) {
 	bl.writerMsg(LevelError, message)
 }
 
+// Log ERROR level message.
+func (bl *BeeLogger) ErrorEx(title, format string, a ...interface{}) {
+	bl.Error(getFmtMessage(title, format, a...))
+}
+
 // Log WARNING level message.
-func (bl *BeeLogger) Warning(title, message string) {
+func (bl *BeeLogger) Warning(message string) {
 	bl.writerMsg(LevelWarning, message)
 }
 
+// Log WARNING level message.
+func (bl *BeeLogger) WarningEx(title, format string, a ...interface{}) {
+	bl.Warning(getFmtMessage(title, format, a...))
+}
+
 // Log INFORMATIONAL level message.
-func (bl *BeeLogger) Informational(title, message string) {
+func (bl *BeeLogger) Info(message string) {
 	bl.writerMsg(LevelInformational, message)
 }
 
+// Log INFORMATIONAL level message.
+func (bl *BeeLogger) InfoEx(title, format string, a ...interface{}) {
+	bl.Info(getFmtMessage(title, format, a...))
+}
+
 // Log DEBUG level message.
-func (bl *BeeLogger) Debug(title, message string) {
+func (bl *BeeLogger) Debug(message string) {
 	bl.writerMsg(LevelDebug, message)
+}
+
+// Log DEBUG level message.
+func (bl *BeeLogger) DebugEx(title, format string, a ...interface{}) {
+	bl.Debug(getFmtMessage(title, format, a...))
+}
+
+func getFmtMessage(title, format string, a ...interface{}) string {
+	return fmt.Sprintf("[%s]%s", title, fmt.Sprintf(format, a...))
 }
 
 // flush all chan data.

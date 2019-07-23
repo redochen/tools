@@ -2,6 +2,7 @@ package time
 
 import (
 	"fmt"
+	. "github.com/redochen/tools/string"
 	"strings"
 	"time"
 )
@@ -139,4 +140,18 @@ func GetShortDate(date string) string {
 		return date
 	}
 	return fmt.Sprintf("%s%s", temp[4:6], temp[6:8])
+}
+
+//获取当前日期时间字符串
+func GetNowStringEx() string {
+	return GetNowString("yyyy-MM-dd HH:mm:ss", false)
+}
+
+//获取当前日期时间字符串
+func GetNowString(format string, isUtcTime bool) string {
+	t := time.Now()
+	if isUtcTime {
+		t = t.UTC()
+	}
+	return CcStr.FormatTime(t, format)
 }

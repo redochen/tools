@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"errors"
 	"fmt"
 	. "github.com/redochen/tools/crypto"
@@ -262,7 +263,7 @@ func CheckRedirect(r *http.Request, via []*http.Request) error {
 }
 
 //处理连接超时
-func DialTimeout(network, addr string) (net.Conn, error) {
+func DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
 	deadline := time.Now().Add(DialTimeoutSeconds * time.Second)
 	c, err := net.DialTimeout(network, addr, time.Duration(DialTimeoutSeconds*time.Second))
 	if err != nil {
@@ -284,4 +285,14 @@ func HttpsBasicAuthorization(username, password string) (string, error) {
 	}
 
 	return "Basic " + auth, nil
+}
+
+//获取查询字符串
+func GetQueryString(m map[string]string) string {
+	data := url.Values{}
+	for k, v := range m {
+		data.Set(k, v)
+	}
+
+	return data.Encode()
 }
