@@ -124,15 +124,32 @@ func (h *StringHelper) FormatTime(t time.Time, format string) string {
 }
 
 //解析DateTime值，格式为：yyyy-MM-dd HH:mm:ss
-func (h *StringHelper) ParseTime(s, format string) time.Time {
+func (h *StringHelper) ParseTime(s, format string, utc bool) time.Time {
 	layout := h.TimeFormatToLayout(format)
-	t, _ := time.Parse(layout, s)
+	if utc {
+		t, _ := time.Parse(layout, s)
+		return t
+	} else {
+		t, _ := time.ParseInLocation(layout, s, time.Now().Location())
+		return t
+	}
+}
+
+/**
+* 从字符串中解析，解析失败时返回默认值
+ */
+func (h *StringHelper) ParseTimeEx(s, format string, utc bool, defaultTime time.Time) time.Time {
+	t := h.ParseTime(s, format, utc)
+	if t.IsZero() {
+		return defaultTime
+	}
+
 	return t
 }
 
 //转换日期时间格式
 func (h *StringHelper) ChangeDateTimeFormat(dateTime, srcFormat, dstFormat string) string {
-	dt := h.ParseTime(dateTime, srcFormat)
+	dt := h.ParseTime(dateTime, srcFormat, true)
 	if dt.IsZero() {
 		return dateTime
 	} else {
@@ -178,6 +195,23 @@ func (h *StringHelper) TrimSpace(text string) string {
 	}
 
 	return strings.TrimSpace(text)
+}
+
+/**
+* 字符串替换
+ */
+func (h *StringHelper) ReplaceAll(s, new string, old ...string) string {
+	if "" == s || nil == old || len(old) <= 0 {
+		return s
+	}
+
+	str := s
+
+	for _, o := range old {
+		str = strings.ReplaceAll(str, o, new)
+	}
+
+	return str
 }
 
 //获取子字符串

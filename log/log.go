@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"runtime/debug"
 	"sync"
 )
 
@@ -238,6 +239,14 @@ func (bl *BeeLogger) Critical(message string) {
 // Log CRITICAL level message.
 func (bl *BeeLogger) CriticalEx(title, format string, a ...interface{}) {
 	bl.Critical(getFmtMessage(title, format, a...))
+}
+
+func (bl *BeeLogger) Fatal(err interface{}) {
+	bl.writerMsg(LevelCritical, fmt.Sprintf("%v; stack: %s", err, debug.Stack()))
+}
+
+func (bl *BeeLogger) FatalEx(title string, err interface{}) {
+	bl.writerMsg(LevelCritical, fmt.Sprintf("[%s]%v; stack: %s", title, err, debug.Stack()))
 }
 
 // Log ERROR level message.

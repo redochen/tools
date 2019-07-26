@@ -22,6 +22,19 @@ var DaysOfMonth = map[time.Month]int{
 	time.December:  31,
 }
 
+var (
+	CcTime = NewTimeHelper()
+)
+
+//time帮助类
+type TimeHelper struct {
+}
+
+//获取一个新的StringHelper实例
+func NewTimeHelper() *TimeHelper {
+	return &TimeHelper{}
+}
+
 //日期差
 type DateDifference struct {
 	Years  int
@@ -30,7 +43,7 @@ type DateDifference struct {
 }
 
 //是否为润年
-func IsLeapYear(year int) bool {
+func (h *TimeHelper) IsLeapYear(year int) bool {
 	ret := false
 	if year%4 == 0 {
 		if year%100 != 0 {
@@ -43,7 +56,7 @@ func IsLeapYear(year int) bool {
 }
 
 //计算日期差
-func CalculateDateDifference(start, end time.Time) *DateDifference {
+func (h *TimeHelper) CalculateDateDifference(start, end time.Time) *DateDifference {
 	var borrowed = false
 	var daysBorrowed = 0
 	diff := &DateDifference{}
@@ -53,7 +66,7 @@ func CalculateDateDifference(start, end time.Time) *DateDifference {
 		diff.Days = end.Day() - start.Day()
 	} else {
 		daysBorrowed = DaysOfMonth[end.Month()-1]
-		if IsLeapYear(end.Year()) &&
+		if h.IsLeapYear(end.Year()) &&
 			end.Month() == time.March {
 			daysBorrowed++ // February in leap year is 29 days
 		}
@@ -90,7 +103,7 @@ func CalculateDateDifference(start, end time.Time) *DateDifference {
 }
 
 //去掉日期中的连接符-/和空格
-func RemoveDateSeparator(date string) string {
+func (h *TimeHelper) RemoveDateSeparator(date string) string {
 	if len(date) > 0 {
 		separators := []string{"-", "/", " "}
 		for _, sep := range separators {
@@ -101,7 +114,7 @@ func RemoveDateSeparator(date string) string {
 }
 
 //获取日期分隔符
-func GetDateSeparator(date string) string {
+func (h *TimeHelper) GetDateSeparator(date string) string {
 	if len(date) > 0 {
 		separators := []string{"-", "/", " ", "."}
 		for _, sep := range separators {
@@ -114,8 +127,8 @@ func GetDateSeparator(date string) string {
 }
 
 //将YYYYMMDD格式的日期转换为YYYY-MM-DD格式或者YYYY-MM格式
-func AddDateSeparator(date, separator string, incDay bool) string {
-	temp := RemoveDateSeparator(date)
+func (h *TimeHelper) AddDateSeparator(date, separator string, incDay bool) string {
+	temp := h.RemoveDateSeparator(date)
 	if len(temp) < 8 {
 		return date
 	}
@@ -128,30 +141,56 @@ func AddDateSeparator(date, separator string, incDay bool) string {
 }
 
 //将日期时间字符串中的时间信息去掉
-func RemoveTimeFromDateTime(date string) string {
-	separator := GetDateSeparator(date)
-	return AddDateSeparator(date, separator, true)
+func (h *TimeHelper) RemoveTimeFromDateTime(date string) string {
+	separator := h.GetDateSeparator(date)
+	return h.AddDateSeparator(date, separator, true)
 }
 
 //获取短日期字符串
-func GetShortDate(date string) string {
-	temp := RemoveDateSeparator(date)
+func (h *TimeHelper) GetShortDate(date string) string {
+	temp := h.RemoveDateSeparator(date)
 	if len(temp) < 8 {
 		return date
 	}
 	return fmt.Sprintf("%s%s", temp[4:6], temp[6:8])
 }
 
-//获取当前日期时间字符串
-func GetNowStringEx() string {
-	return GetNowString("yyyy-MM-dd HH:mm:ss", false)
+/**
+* 获取当前日期时间字符串
+ */
+func (h *TimeHelper) GetNowString() string {
+	return h.GetNowStringEx("yyyy-MM-dd HH:mm:ss", false)
 }
 
-//获取当前日期时间字符串
-func GetNowString(format string, isUtcTime bool) string {
+/**
+* 获取当前日期时间字符串
+ */
+func (h *TimeHelper) GetNowStringEx(format string, isUtcTime bool) string {
 	t := time.Now()
 	if isUtcTime {
 		t = t.UTC()
 	}
 	return CcStr.FormatTime(t, format)
+}
+
+/**
+* 将日期时间格式化字符串后再转换成64位整数
+ */
+func (h *TimeHelper) TimeToInt64(t time.Time, format string) int64 {
+	s := CcStr.FormatTime(t, format)
+	return CcStr.ParseInt64(s)
+}
+
+/**
+* 将日期时间转换成 yyyy-MM-dd 00:00:00:000
+ */
+func (h *TimeHelper) ToDayStart(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
+/**
+* 将日期时间转换成 yyyy-MM-dd 23:59:59:999
+ */
+func (h *TimeHelper) ToDayEnd(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 59, t.Location())
 }
