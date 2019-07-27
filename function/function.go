@@ -64,7 +64,7 @@ func getFuncName(pc uintptr, seps ...rune) string {
 func CheckPanic() {
 	name := GetCallerFuncName()
 	if err := recover(); err != nil {
-		Logger.FatalEx(name, err)
+		Logger.Fatalf(name, err)
 	}
 }
 
@@ -121,7 +121,7 @@ func InvokeTickerEx(interval time.Duration, deadline time.Time, stop <-chan bool
 	defer CheckPanic()
 
 	if time.Now().After(deadline) {
-		Logger.ErrorEx("InvokeTickerEx", "%s invalid deadline: %v", name, deadline)
+		Logger.Errorf("%s invalid deadline: %v", name, deadline)
 		return
 	}
 
@@ -137,13 +137,13 @@ Loop:
 		select {
 		case <-t.C:
 			if time.Now().After(deadline) {
-				Logger.DebugEx("InvokeTickerEx", "%s was dead", name)
+				Logger.Debugf("%s was dead", name)
 				break Loop
 			} else {
 				InvokeFunc(fn, args...)
 			}
 		case <-stop:
-			Logger.DebugEx("InvokeTickerEx", "%s was stopped", name)
+			Logger.Debugf("%s was stopped", name)
 			break Loop
 		}
 	}
@@ -205,7 +205,7 @@ func (rm *FuncContextMap) InvokeFuncWithTimeout(timeout time.Duration, name stri
 	defer CheckPanic()
 
 	if timeout < 0 {
-		Logger.ErrorEx("InvokeFuncWithDeadline", "%s invalid timeout: %d", name, timeout)
+		Logger.Errorf("%s invalid timeout: %d", name, timeout)
 		return nil
 	}
 
@@ -219,13 +219,13 @@ Loop:
 	for {
 		select {
 		case result = <-ch:
-			Logger.DebugEx("InvokeFuncWithDeadline", "%s ran to done", name)
+			Logger.Debugf("%s ran to done", name)
 			break Loop
 		case <-r.stop:
-			Logger.DebugEx("InvokeFuncWithDeadline", "%s has been stopped", name)
+			Logger.Debugf("%s has been stopped", name)
 			break Loop
 		case <-time.After(timeout):
-			Logger.DebugEx("InvokeFuncWithDeadline", "%s has timed out", name)
+			Logger.Debugf("%s has timed out", name)
 			break Loop
 		}
 	}
@@ -249,7 +249,7 @@ func (rm *FuncContextMap) StartTickerWithDeadline(interval time.Duration, deadli
 	defer CheckPanic()
 
 	if time.Now().After(deadline) {
-		Logger.ErrorEx("StartTickerWithDeadline", "%s invalid deadline: %v", name, deadline)
+		Logger.Errorf("%s invalid deadline: %v", name, deadline)
 		return
 	}
 
@@ -261,7 +261,7 @@ Loop:
 		select {
 		case <-r.stop:
 			s <- true
-			Logger.DebugEx("StartTickerWithDeadline", "%s has been stopped", name)
+			Logger.Debugf("%s has been stopped", name)
 			break Loop
 		}
 	}
@@ -275,7 +275,7 @@ func (rm *FuncContextMap) StopFunc(name string) {
 
 	r, ok := rm.funcs[name]
 	if !ok {
-		Logger.ErrorEx("StopFunc", "routine %s not found", name)
+		Logger.Errorf("routine %s not found", name)
 		return
 	}
 

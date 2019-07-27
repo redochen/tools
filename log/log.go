@@ -6,6 +6,7 @@ import (
 	"path"
 	"runtime"
 	"runtime/debug"
+	"strings"
 	"sync"
 )
 
@@ -222,75 +223,119 @@ func (bl *BeeLogger) startLogger() {
 }
 
 // Log EMERGENCY level message.
-func (bl *BeeLogger) Emerge(message string) {
-	bl.writerMsg(LevelEmergency, message)
+func (bl *BeeLogger) Emerge(messages ...string) {
+	_ = bl.writerMsg(LevelEmergency, getMessage(getCallerFuncName(), messages...))
 }
 
 // Log EMERGENCY level message.
-func (bl *BeeLogger) EmergeEx(title, format string, a ...interface{}) {
-	bl.Emerge(getFmtMessage(title, format, a...))
+func (bl *BeeLogger) Emergef(format string, a ...interface{}) {
+	_ = bl.writerMsg(LevelEmergency, getFmtMessage(getCallerFuncName(), format, a...))
 }
 
 // Log CRITICAL level message.
-func (bl *BeeLogger) Critical(message string) {
-	bl.writerMsg(LevelCritical, message)
+func (bl *BeeLogger) Critical(messages ...string) {
+	_ = bl.writerMsg(LevelCritical, getMessage(getCallerFuncName(), messages...))
 }
 
 // Log CRITICAL level message.
-func (bl *BeeLogger) CriticalEx(title, format string, a ...interface{}) {
-	bl.Critical(getFmtMessage(title, format, a...))
+func (bl *BeeLogger) Criticalf(format string, a ...interface{}) {
+	_ = bl.writerMsg(LevelCritical, getFmtMessage(getCallerFuncName(), format, a...))
 }
 
 func (bl *BeeLogger) Fatal(err interface{}) {
-	bl.writerMsg(LevelCritical, fmt.Sprintf("%v; stack: %s", err, debug.Stack()))
+	message := fmt.Sprintf("[%s]%v; stack: %s", getCallerFuncName(), err, debug.Stack())
+	_ = bl.writerMsg(LevelCritical, message)
 }
 
-func (bl *BeeLogger) FatalEx(title string, err interface{}) {
-	bl.writerMsg(LevelCritical, fmt.Sprintf("[%s]%v; stack: %s", title, err, debug.Stack()))
-}
-
-// Log ERROR level message.
-func (bl *BeeLogger) Error(message string) {
-	bl.writerMsg(LevelError, message)
+func (bl *BeeLogger) Fatalf(format string, a ...interface{}) {
+	_ = bl.writerMsg(LevelCritical, getFmtMessage(getCallerFuncName(), format, a...))
 }
 
 // Log ERROR level message.
-func (bl *BeeLogger) ErrorEx(title, format string, a ...interface{}) {
-	bl.Error(getFmtMessage(title, format, a...))
+func (bl *BeeLogger) Error(messages ...string) {
+	_ = bl.writerMsg(LevelError, getMessage(getCallerFuncName(), messages...))
+}
+
+// Log ERROR level message.
+func (bl *BeeLogger) Errorf(format string, a ...interface{}) {
+	_ = bl.writerMsg(LevelError, getFmtMessage(getCallerFuncName(), format, a...))
 }
 
 // Log WARNING level message.
-func (bl *BeeLogger) Warning(message string) {
-	bl.writerMsg(LevelWarning, message)
+func (bl *BeeLogger) Warning(messages ...string) {
+	_ = bl.writerMsg(LevelWarning, getMessage(getCallerFuncName(), messages...))
 }
 
 // Log WARNING level message.
-func (bl *BeeLogger) WarningEx(title, format string, a ...interface{}) {
-	bl.Warning(getFmtMessage(title, format, a...))
+func (bl *BeeLogger) Warningf(format string, a ...interface{}) {
+	_ = bl.writerMsg(LevelWarning, getFmtMessage(getCallerFuncName(), format, a...))
 }
 
 // Log INFORMATIONAL level message.
-func (bl *BeeLogger) Info(message string) {
-	bl.writerMsg(LevelInformational, message)
+func (bl *BeeLogger) Info(messages ...string) {
+	_ = bl.writerMsg(LevelInformational, getMessage(getCallerFuncName(), messages...))
 }
 
 // Log INFORMATIONAL level message.
-func (bl *BeeLogger) InfoEx(title, format string, a ...interface{}) {
-	bl.Info(getFmtMessage(title, format, a...))
+func (bl *BeeLogger) Infof(format string, a ...interface{}) {
+	_ = bl.writerMsg(LevelInformational, getFmtMessage(getCallerFuncName(), format, a...))
 }
 
 // Log DEBUG level message.
-func (bl *BeeLogger) Debug(message string) {
-	bl.writerMsg(LevelDebug, message)
+func (bl *BeeLogger) Debug(messages ...string) {
+	_ = bl.writerMsg(LevelDebug, getMessage(getCallerFuncName(), messages...))
 }
 
 // Log DEBUG level message.
-func (bl *BeeLogger) DebugEx(title, format string, a ...interface{}) {
-	bl.Debug(getFmtMessage(title, format, a...))
+func (bl *BeeLogger) Debugf(format string, a ...interface{}) {
+	_ = bl.writerMsg(LevelDebug, getFmtMessage(getCallerFuncName(), format, a...))
+}
+
+func getMessage(title string, messages ...string) string {
+	msg := fmt.Sprintf("[%s]", title)
+
+	if messages != nil && len(messages) > 0 {
+		for _, m := range messages {
+			msg += m
+		}
+	}
+
+	return msg
 }
 
 func getFmtMessage(title, format string, a ...interface{}) string {
 	return fmt.Sprintf("[%s]%s", title, fmt.Sprintf(format, a...))
+}
+
+/**
+* 获取调用者名称
+ */
+func getCallerFuncName(seps ...rune) string {
+	pc, _, _, _ := runtime.Caller(3)
+	return getFuncName(pc, seps...)
+}
+
+/**
+* 获取函数名称
+ */
+func getFuncName(pc uintptr, seps ...rune) string {
+	fn := runtime.FuncForPC(pc).Name()
+
+	// 用 seps 进行分割
+	fields := strings.FieldsFunc(fn, func(sep rune) bool {
+		for _, s := range seps {
+			if sep == s {
+				return true
+			}
+		}
+		return false
+	})
+
+	if size := len(fields); size > 0 {
+		return fields[size-1]
+	}
+
+	return ""
 }
 
 // flush all chan data.
