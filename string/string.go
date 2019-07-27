@@ -22,6 +22,11 @@ func NewStringHelper() *StringHelper {
 	return &StringHelper{}
 }
 
+//格式化输入bool
+func (h *StringHelper) FormatBool(b bool) string {
+	return strconv.FormatBool(b)
+}
+
 //解析bool值
 func (h *StringHelper) ParseBool(s string) bool {
 	b, _ := strconv.ParseBool(s)
@@ -145,6 +150,38 @@ func (h *StringHelper) ParseTimeEx(s, format string, utc bool, defaultTime time.
 	}
 
 	return t
+}
+
+/**
+* 转换成字符串
+ */
+func (h *StringHelper) ToString(i interface{}) string {
+	switch i.(type) {
+	case int:
+		return h.FormatInt(i.(int))
+	case uint:
+		return h.FormatUint(i.(uint))
+	case int32:
+		return h.FormatInt32(i.(int32))
+	case uint32:
+		return h.FormatUint32(i.(uint32))
+	case int64:
+		return h.FormatInt64(i.(int64))
+	case uint64:
+		return h.FormatUint64(i.(uint64))
+	case float32:
+		return h.FormatFloat(i.(float32))
+	case float64:
+		return h.FormatFloat64(i.(float64))
+	case bool:
+		return h.FormatBool(i.(bool))
+	case time.Time:
+		return h.FormatTime(i.(time.Time), "yyyy-MM-dd HH:mm:ss")
+	case string:
+		return i.(string)
+	default:
+		return "unknown type"
+	}
 }
 
 //转换日期时间格式
