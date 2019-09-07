@@ -2,6 +2,7 @@ package string
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -179,6 +180,8 @@ func (h *StringHelper) ToString(i interface{}) string {
 		return h.FormatTime(i.(time.Time), "yyyy-MM-dd HH:mm:ss")
 	case string:
 		return i.(string)
+	case json.RawMessage:
+		return string([]byte(i.(json.RawMessage)))
 	default:
 		return "unknown type"
 	}
