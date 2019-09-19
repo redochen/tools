@@ -57,7 +57,7 @@ func NewHttpRequest(r *Request, body io.Reader) (*http.Request, error) {
 	}
 
 	//httpReq, err := http.NewRequest(method, r.Url, body)
-	httpReq, err := NewRawRequest(method, r.Url, body)
+	httpReq, err := NewRawRequest(method, r.Url, r.SetOpaque, body)
 	if err != nil {
 		return nil, err
 	}
@@ -119,14 +119,16 @@ func NewHttpRequest(r *Request, body io.Reader) (*http.Request, error) {
 }
 
 //创建新的HTTP请求（重写http.NewRequest方法，因为该方法会对URL进行转码）
-func NewRawRequest(method, urlStr string, body io.Reader) (*http.Request, error) {
+func NewRawRequest(method, urlStr string, setOpaque bool, body io.Reader) (*http.Request, error) {
 	httpUrl, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
 
-	//设置不转码路径
-	httpUrl.Opaque = urlStr
+	//设置不转码路径。注意：这里带queryString的url会有问题
+	if setOpaque {
+		httpUrl.Opaque = urlStr
+	}
 
 	rc, ok := body.(io.ReadCloser)
 	if !ok && body != nil {

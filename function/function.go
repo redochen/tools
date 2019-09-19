@@ -1,4 +1,4 @@
-package routine
+package function
 
 import (
 	. "github.com/redochen/tools/log"
