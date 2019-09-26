@@ -6,73 +6,74 @@ import (
 	"sync"
 )
 
-//线程安全的集合类
+//ConcurrentSet 线程安全的集合类
 type ConcurrentSet struct {
-	m     *sync.RWMutex
+	lock  *sync.RWMutex
 	items map[interface{}]bool
 }
 
 func NewConcurrentSet() *ConcurrentSet {
 	return &ConcurrentSet{
-		m:     new(sync.RWMutex),
+		lock:  new(sync.RWMutex),
 		items: make(map[interface{}]bool),
 	}
 }
 
-//添加项到集合
-func (cs *ConcurrentSet) Add(item interface{}) bool {
-	cs.m.Lock()
-	defer cs.m.Unlock()
+//Add 添加项到集合
+func (s *ConcurrentSet) Add(item interface{}) bool {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	if !cs.items[item] {
-		cs.items[item] = true
+	if !s.items[item] {
+		s.items[item] = true
 		return true
 	}
 
 	return false
 }
 
-//从集合中移除项
-func (cs *ConcurrentSet) Remove(item interface{}) {
-	cs.m.Lock()
-	defer cs.m.Unlock()
+//Remove 从集合中移除项
+func (s *ConcurrentSet) Remove(item interface{}) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	delete(cs.items, item)
+	delete(s.items, item)
 }
 
-//清空集合
-func (cs *ConcurrentSet) Clear() {
-	cs.m.Lock()
-	defer cs.m.Unlock()
+//Clear 清空集合
+func (s *ConcurrentSet) Clear() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	cs.items = make(map[interface{}]bool)
+	s.items = make(map[interface{}]bool)
 }
 
-//测试集合是否包含项
-func (cs *ConcurrentSet) Contains(e interface{}) bool {
-	cs.m.RLock()
-	defer cs.m.RUnlock()
+//Contains 测试集合是否包含项
+func (s *ConcurrentSet) Contains(e interface{}) bool {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
-	return cs.items[e]
+	return s.items[e]
 }
 
 //获取集合的项数量
-func (cs *ConcurrentSet) Len() int {
-	cs.m.RLock()
-	defer cs.m.RUnlock()
+func (s *ConcurrentSet) Len() int {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
-	return len(cs.items)
+	return len(s.items)
 }
 
-func (cs *ConcurrentSet) String() string {
-	cs.m.RLock()
-	defer cs.m.RUnlock()
+//String 转换成字符串
+func (s *ConcurrentSet) String() string {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
 
 	var buf bytes.Buffer
 	buf.WriteString("ConcurrentSet{")
 
 	first := true
-	for k := range cs.items {
+	for k := range s.items {
 		if first {
 			first = false
 		} else {

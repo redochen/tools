@@ -1,34 +1,33 @@
 package concurrent
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
 
 func TestConcurrentSet(t *testing.T) {
-	cs := NewConcurrentSet()
+	s := NewConcurrentSet()
 
-	cs.Add(123)
-	cs.Add("abc")
-	cs.Add(nil)
-	cs.Add(time.Now())
+	s.Add(123)
+	s.Add("abc")
+	s.Add(nil)
+	s.Add(time.Now())
 
-	t.Log(fmt.Sprintf("Len:%d,String:%s", cs.Len(), cs.String()))
+	t.Logf("Len:%d,String:%s", s.Len(), s.String())
 
-	if !cs.Contains("abc") {
+	if !s.Contains("abc") {
 		t.Error("TestConcurrentSet Add failed")
 	}
 
-	cs.Remove("abc")
+	s.Remove("abc")
 
-	if cs.Contains("abc") {
+	if s.Contains("abc") {
 		t.Error("TestConcurrentSet Remove failed")
 	}
 
-	cs.Clear()
+	s.Clear()
 
-	if cs.Contains(123) {
+	if s.Contains(123) {
 		t.Error("TestConcurrentSet Clear failed")
 	}
 
