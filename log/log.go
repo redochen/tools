@@ -2,366 +2,101 @@ package log
 
 import (
 	"fmt"
-	"os"
-	"path"
+	log "github.com/redochen/log4go"
 	"runtime"
 	"runtime/debug"
-	"strings"
-	"sync"
-)
-
-const (
-	LogSection string = "log"
-)
-
-// RFC5424 log message levels.
-const (
-	LevelEmergency = iota
-	LevelAlert
-	LevelCritical
-	LevelError
-	LevelWarning
-	LevelNotice
-	LevelInformational
-	LevelDebug
-)
-
-func getLevelName(level int) string {
-	switch level {
-	case LevelError:
-		return "error"
-	case LevelAlert:
-		return "alert"
-	case LevelCritical:
-		return "critical"
-	case LevelWarn:
-		return "warn"
-	case LevelNotice:
-		return "notice"
-	case LevelInformational:
-		return "info"
-	case LevelDebug:
-		return "debug"
-	default:
-		return "no"
-	}
-
-}
-
-var (
-	machineName  string
-	Logger       *BeeLogger
-	isUseMongodb bool //是否使用mongodb做为日志库
-	mongodbUrl   string
-	category     int    //日志类别
-	businessNo   int    //业务编号
-	tableName    string //mongodb日志表名称
 )
 
 func init() {
-	registerFile()
-	registerMongo()
-	Logger = NewLogger(100000)
+	log.LoadConfiguration("./log.json")
 }
 
-// Legacy loglevel constants to ensure backwards compatibility.
-//
-// Deprecated: will be removed in 1.5.0.
-const (
-	LevelInfo  = LevelInformational
-	LevelTrace = LevelDebug
-	LevelWarn  = LevelWarning
-)
-
-type loggerType func() LoggerInterface
-
-// LoggerInterface defines the behavior of a log provider.
-type LoggerInterface interface {
-	Init(config string) error
-	WriteMsg(msg string, level int) error
-	Destroy()
-	Flush()
+//Debug 输出DEBUG日志
+func Debug(msg ...string) {
+	log.Log(log.DEBUG, getSource(), getMessage(msg...))
+	log.Flush()
 }
 
-var adapters = make(map[string]loggerType)
-
-// Register makes a log provide available by the provided name.
-// If Register is called twice with the same name or if driver is nil,
-// it panics.
-func Register(name string, log loggerType) {
-	if log == nil {
-		fmt.Println("logs: Register provide is nil")
-		return
-	}
-	if _, dup := adapters[name]; dup {
-		panic("logs: Register called twice for provider " + name)
-	}
-	adapters[name] = log
+//Debugf 输出DEBUG日志
+func Debugf(format string, args ...interface{}) {
+	log.Log(log.DEBUG, getSource(), fmt.Sprintf(format, args...))
+	log.Flush()
 }
 
-// BeeLogger is default logger in beego application.
-// it can contain several providers and log message into all providers.
-type BeeLogger struct {
-	lock                sync.Mutex
-	level               int
-	enableFuncCallDepth bool
-	loggerFuncCallDepth int
-	msg                 chan *logMsg
-	outputs             map[string]LoggerInterface
+//Info 输出INFORMATION日志
+func Info(msg ...string) {
+	log.Log(log.INFO, getSource(), getMessage(msg...))
+	log.Flush()
 }
 
-type logMsg struct {
-	level int
-	msg   string
+//Infof 输出INFORMATION日志
+func Infof(format string, args ...interface{}) {
+	log.Log(log.INFO, getSource(), fmt.Sprintf(format, args...))
+	log.Flush()
 }
 
-// NewLogger returns a new BeeLogger.
-// channellen means the number of messages in chan.
-// if the buffering chan is full, logger adapters write to file or other way.
-func NewLogger(channellen int64) *BeeLogger {
-	bl := new(BeeLogger)
-	bl.level = LevelDebug
-	bl.loggerFuncCallDepth = 2
-	bl.msg = make(chan *logMsg, channellen)
-	bl.outputs = make(map[string]LoggerInterface)
-	var err error
-	machineName, err = os.Hostname()
-	if err != nil {
-		panic(err)
-	}
-	bl.SetLogger("file", `{"level":7}`)
-	bl.SetLogger("mongo", "4")
-	go bl.startLogger()
-	return bl
+//Warn 输出WARNING日志
+func Warn(msg ...string) {
+	log.Log(log.WARNING, getSource(), getMessage(msg...))
+	log.Flush()
 }
 
-// SetLogger provides a given logger adapter into BeeLogger with config string.
-// config need to be correct JSON as string: {"interval":360}.
-func (bl *BeeLogger) SetLogger(adaptername string, config string) error {
-	bl.lock.Lock()
-	defer bl.lock.Unlock()
-	if log, ok := adapters[adaptername]; ok {
-		lg := log()
-		err := lg.Init(config)
-		bl.outputs[adaptername] = lg
-		if err != nil {
-			fmt.Println("logs.BeeLogger.SetLogger: " + err.Error())
-			return err
-		}
-	} else {
-		return fmt.Errorf("logs: unknown adaptername %q (forgotten Register?)", adaptername)
-	}
-	return nil
+//Warnf 输出WARNING日志
+func Warnf(format string, args ...interface{}) {
+	log.Log(log.WARNING, getSource(), fmt.Sprintf(format, args...))
+	log.Flush()
 }
 
-// remove a logger adapter in BeeLogger.
-func (bl *BeeLogger) DelLogger(adaptername string) error {
-	bl.lock.Lock()
-	defer bl.lock.Unlock()
-	if lg, ok := bl.outputs[adaptername]; ok {
-		lg.Destroy()
-		delete(bl.outputs, adaptername)
-		return nil
-	} else {
-		return fmt.Errorf("logs: unknown adaptername %q (forgotten Register?)", adaptername)
-	}
+//Error 输出ERROR日志
+func Error(msg ...string) {
+	log.Log(log.ERROR, getSource(), getMessage(msg...))
+	log.Flush()
 }
 
-func (bl *BeeLogger) writerMsg(loglevel int, msg string) error {
-	if loglevel > bl.level {
-		return nil
-	}
-	lm := new(logMsg)
-	lm.level = loglevel
-	if bl.enableFuncCallDepth {
-		_, file, line, ok := runtime.Caller(bl.loggerFuncCallDepth)
-		if ok {
-			_, filename := path.Split(file)
-			lm.msg = fmt.Sprintf("[%s:%d] %s", filename, line, msg)
-		} else {
-			lm.msg = msg
-		}
-	} else {
-		lm.msg = msg
-	}
-	bl.msg <- lm
-	return nil
+//Errorf 输出ERROR日志
+func Errorf(format string, args ...interface{}) {
+	log.Log(log.ERROR, getSource(), fmt.Sprintf(format, args...))
+	log.Flush()
 }
 
-// Set log message level.
-//
-// If message level (such as LevelDebug) is higher than logger level (such as LevelWarning),
-// log providers will not even be sent the message.
-func (bl *BeeLogger) SetLevel(l int) {
-	bl.level = l
+//Fatal 输出FATAL日志
+func Fatal(msg ...string) {
+	log.Log(log.FATAL, getSource(), getMessage(msg...))
+	log.Flush()
 }
 
-// set log funcCallDepth
-func (bl *BeeLogger) SetLogFuncCallDepth(d int) {
-	bl.loggerFuncCallDepth = d
+//Fatalf 输出FATAL日志
+func Fatalf(format string, args ...interface{}) {
+	log.Log(log.FATAL, getSource(), fmt.Sprintf(format, args...))
+	log.Flush()
 }
 
-// enable log funcCallDepth
-func (bl *BeeLogger) EnableFuncCallDepth(b bool) {
-	bl.enableFuncCallDepth = b
+//FatalEx 输出FATAL日志
+func FatalEx(err error) {
+	log.Log(log.FATAL, getSource(), fmt.Sprintf("%v; stack: %s", err, debug.Stack()))
+	log.Flush()
 }
 
-// start logger chan reading.
-// when chan is not empty, write logs.
-func (bl *BeeLogger) startLogger() {
-	for {
-		select {
-		case bm := <-bl.msg:
-			for _, l := range bl.outputs {
-				err := l.WriteMsg(bm.msg, bm.level)
-				if err != nil {
-					fmt.Println("ERROR, unable to WriteMsg:", err)
-				}
-			}
-		}
-	}
-}
-
-// Log EMERGENCY level message.
-func (bl *BeeLogger) Emerge(messages ...string) {
-	_ = bl.writerMsg(LevelEmergency, getMessage(getCallerFuncName(), messages...))
-}
-
-// Log EMERGENCY level message.
-func (bl *BeeLogger) Emergef(format string, a ...interface{}) {
-	_ = bl.writerMsg(LevelEmergency, getFmtMessage(getCallerFuncName(), format, a...))
-}
-
-// Log CRITICAL level message.
-func (bl *BeeLogger) Critical(messages ...string) {
-	_ = bl.writerMsg(LevelCritical, getMessage(getCallerFuncName(), messages...))
-}
-
-// Log CRITICAL level message.
-func (bl *BeeLogger) Criticalf(format string, a ...interface{}) {
-	_ = bl.writerMsg(LevelCritical, getFmtMessage(getCallerFuncName(), format, a...))
-}
-
-func (bl *BeeLogger) Fatal(err interface{}) {
-	message := fmt.Sprintf("[%s]%v; stack: %s", getCallerFuncName(), err, debug.Stack())
-	_ = bl.writerMsg(LevelCritical, message)
-}
-
-func (bl *BeeLogger) Fatalf(format string, a ...interface{}) {
-	_ = bl.writerMsg(LevelCritical, getFmtMessage(getCallerFuncName(), format, a...))
-}
-
-// Log ERROR level message.
-func (bl *BeeLogger) Error(messages ...string) {
-	_ = bl.writerMsg(LevelError, getMessage(getCallerFuncName(), messages...))
-}
-
-// Log ERROR level message.
-func (bl *BeeLogger) Errorf(format string, a ...interface{}) {
-	_ = bl.writerMsg(LevelError, getFmtMessage(getCallerFuncName(), format, a...))
-}
-
-// Log WARNING level message.
-func (bl *BeeLogger) Warning(messages ...string) {
-	_ = bl.writerMsg(LevelWarning, getMessage(getCallerFuncName(), messages...))
-}
-
-// Log WARNING level message.
-func (bl *BeeLogger) Warningf(format string, a ...interface{}) {
-	_ = bl.writerMsg(LevelWarning, getFmtMessage(getCallerFuncName(), format, a...))
-}
-
-// Log INFORMATIONAL level message.
-func (bl *BeeLogger) Info(messages ...string) {
-	_ = bl.writerMsg(LevelInformational, getMessage(getCallerFuncName(), messages...))
-}
-
-// Log INFORMATIONAL level message.
-func (bl *BeeLogger) Infof(format string, a ...interface{}) {
-	_ = bl.writerMsg(LevelInformational, getFmtMessage(getCallerFuncName(), format, a...))
-}
-
-// Log DEBUG level message.
-func (bl *BeeLogger) Debug(messages ...string) {
-	_ = bl.writerMsg(LevelDebug, getMessage(getCallerFuncName(), messages...))
-}
-
-// Log DEBUG level message.
-func (bl *BeeLogger) Debugf(format string, a ...interface{}) {
-	_ = bl.writerMsg(LevelDebug, getFmtMessage(getCallerFuncName(), format, a...))
-}
-
-func getMessage(title string, messages ...string) string {
-	msg := fmt.Sprintf("[%s]", title)
-
-	if messages != nil && len(messages) > 0 {
-		for _, m := range messages {
-			msg += m
-		}
+//getMessage 获取消息
+func getMessage(msg ...string) string {
+	if nil == msg || len(msg) <= 0 {
+		return ""
 	}
 
-	return msg
-}
-
-func getFmtMessage(title, format string, a ...interface{}) string {
-	return fmt.Sprintf("[%s]%s", title, fmt.Sprintf(format, a...))
-}
-
-/**
-* 获取调用者名称
- */
-func getCallerFuncName(seps ...rune) string {
-	pc, _, _, _ := runtime.Caller(3)
-	return getFuncName(pc, seps...)
-}
-
-/**
-* 获取函数名称
- */
-func getFuncName(pc uintptr, seps ...rune) string {
-	fn := runtime.FuncForPC(pc).Name()
-
-	// 用 seps 进行分割
-	fields := strings.FieldsFunc(fn, func(sep rune) bool {
-		for _, s := range seps {
-			if sep == s {
-				return true
-			}
-		}
-		return false
-	})
-
-	if size := len(fields); size > 0 {
-		return fields[size-1]
+	var message string
+	for _, m := range msg {
+		message += m
 	}
 
-	return ""
+	return message
 }
 
-// flush all chan data.
-func (bl *BeeLogger) Flush() {
-	for _, l := range bl.outputs {
-		l.Flush()
+//getSource returns caller's info
+func getSource() string {
+	pc, _, lineno, ok := runtime.Caller(2)
+	src := ""
+	if ok {
+		src = fmt.Sprintf("%s:%d", runtime.FuncForPC(pc).Name(), lineno)
 	}
-}
-
-// close logger, flush all chan data and destroy all adapters in BeeLogger.
-func (bl *BeeLogger) Close() {
-	for {
-		if len(bl.msg) > 0 {
-			bm := <-bl.msg
-			for _, l := range bl.outputs {
-				err := l.WriteMsg(bm.msg, bm.level)
-				if err != nil {
-					fmt.Println("ERROR, unable to WriteMsg (while closing logger):", err)
-				}
-			}
-		} else {
-			break
-		}
-	}
-	for _, l := range bl.outputs {
-		l.Flush()
-		l.Destroy()
-	}
+	return src
 }

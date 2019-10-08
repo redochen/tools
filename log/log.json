@@ -1,0 +1,29 @@
+{
+    "console": {
+        "enable": true,
+        "level": "ERROR"
+    },
+    "files": [{
+        "enable": true,
+        "level": "ERROR",
+        "filename": "./logs/err.log",
+        "category": "ERROR",
+        "pattern": "[%D %T] [%C] [%L] (%S) %M",
+        "rotate": true,
+        "maxsize": "500M",
+        "maxlines": "10K",
+        "daily": true,
+        "sanitize": true
+    }, {
+        "enable": true,
+        "level": "DEBUG",
+        "filename": "./logs/all.log",
+        "category": "ALL",
+        "pattern": "[%D %T] [%C] [%L] (%S) %M",
+        "rotate": true,
+        "maxsize": "500M",
+        "maxlines": "10K",
+        "daily": true,
+        "sanitize": true
+    }]
+}
