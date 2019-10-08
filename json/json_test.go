@@ -16,7 +16,7 @@ func TestJson(t *testing.T) {
 		Age:  18,
 	}
 
-	s, err := CcJson.Serialize(p1)
+	s, err := Serialize(p1)
 	if err != nil {
 		t.Error("TestJson failed Serialize:", err)
 		return
@@ -24,7 +24,7 @@ func TestJson(t *testing.T) {
 
 	//t.Log(s)
 
-	v, err := CcJson.Deserialize(s, reflect.TypeOf(p1))
+	v, err := Deserialize(s, reflect.TypeOf(p1))
 	if err != nil {
 		t.Error("TestJson failed Deserialize:", err)
 		return
