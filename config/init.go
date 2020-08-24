@@ -3,11 +3,12 @@ package config
 import (
 	"flag"
 	"fmt"
-	"github.com/larspensjo/config"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/larspensjo/config"
 )
 
 const (
@@ -17,6 +18,7 @@ const (
 )
 
 var (
+	//Conf 配置实例
 	Conf *Config = nil
 )
 

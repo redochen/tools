@@ -2,16 +2,18 @@ package config
 
 import (
 	"errors"
+
 	"github.com/larspensjo/config"
 	CcStr "github.com/redochen/tools/string"
 )
 
+//Config 配置结构定义
 type Config struct {
 	FilePath string
 	Config   *config.Config
 }
 
-//是否有效
+//IsValid 是否有效
 func (c *Config) IsValid() bool {
 	if c.Config != nil {
 		return true
@@ -20,7 +22,7 @@ func (c *Config) IsValid() bool {
 	}
 }
 
-//是否为默认节点
+//IsDefaultSection 是否为默认节点
 func (c *Config) IsDefaultSection(section string) bool {
 	if "" == section || len(section) <= 0 {
 		return true
@@ -33,7 +35,7 @@ func (c *Config) IsDefaultSection(section string) bool {
 	return false
 }
 
-//检查是否存在特定的配置节（配置节总是存在）
+//HasSection 检查是否存在特定的配置节（配置节总是存在）
 func (c *Config) HasSection(section string) bool {
 	if nil == c.Config {
 		return false
@@ -42,7 +44,7 @@ func (c *Config) HasSection(section string) bool {
 	return c.Config.HasSection(section)
 }
 
-//获取所有节点列表
+//GetSections 获取所有节点列表
 func (c *Config) GetSections() []string {
 	if nil == c.Config {
 		return nil
@@ -51,7 +53,7 @@ func (c *Config) GetSections() []string {
 	return c.Config.Sections()
 }
 
-//检查是否存在特定的配置项
+//HasOption 检查是否存在特定的配置项
 func (c *Config) HasOption(section, option string) bool {
 	if nil == c.Config {
 		return false
@@ -60,7 +62,7 @@ func (c *Config) HasOption(section, option string) bool {
 	return c.Config.HasOption(section, option)
 }
 
-//获取某个节点下的所有配置项
+//GetOptions 获取某个节点下的所有配置项
 func (c *Config) GetOptions(section string) ([]string, error) {
 	if nil == c.Config {
 		return nil, errors.New("section not exist")
@@ -69,7 +71,7 @@ func (c *Config) GetOptions(section string) ([]string, error) {
 	return c.Config.Options(section)
 }
 
-//读取默认配置节下的特定配置项
+//DefaultString 读取默认配置节下的特定配置项
 func (c *Config) DefaultString(option string) (string, error) {
 	if nil == c.Config {
 		return "", errors.New("config not initialized")
@@ -78,7 +80,7 @@ func (c *Config) DefaultString(option string) (string, error) {
 	return c.Config.RawStringDefault(option)
 }
 
-//读取默认配置节下的特定配置项（不存或失败时返回默认值）
+//DefaultStringEx 读取默认配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) DefaultStringEx(option, defaultValue string) string {
 	if nil == c.Config {
 		return defaultValue
@@ -89,7 +91,7 @@ func (c *Config) DefaultStringEx(option, defaultValue string) string {
 	return CcStr.FirstValid(value, defaultValue)
 }
 
-//读取特定配置节下的特定配置项
+//String 读取特定配置节下的特定配置项
 func (c *Config) String(section, option string) (string, error) {
 	if nil == c.Config {
 		return "", errors.New("config not initialized")
@@ -98,7 +100,7 @@ func (c *Config) String(section, option string) (string, error) {
 	return c.Config.String(section, option)
 }
 
-//读取特定配置节下的特定配置项（不存或失败时返回默认值）
+//StringEx 读取特定配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) StringEx(section, option, defaultValue string) string {
 	if nil == c.Config {
 		return defaultValue
@@ -113,7 +115,7 @@ func (c *Config) StringEx(section, option, defaultValue string) string {
 	return CcStr.FirstValid(value, defaultValue)
 }
 
-//读取默认配置节下的特定配置项
+//DefaultInt 读取默认配置节下的特定配置项
 func (c *Config) DefaultInt(option string) (int, error) {
 	str, err := c.DefaultString(option)
 	if err != nil {
@@ -123,7 +125,7 @@ func (c *Config) DefaultInt(option string) (int, error) {
 	return CcStr.ParseInt(str), nil
 }
 
-//读取默认配置节下的特定配置项（不存或失败时返回默认值）
+//DefaultIntEx 读取默认配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) DefaultIntEx(option string, defaultValue int) int {
 	str, _ := c.DefaultString(option)
 	if str == "" {
@@ -133,7 +135,7 @@ func (c *Config) DefaultIntEx(option string, defaultValue int) int {
 	return CcStr.ParseInt(str)
 }
 
-//读取特定配置节下的特定配置项
+//Int 读取特定配置节下的特定配置项
 func (c *Config) Int(section, option string) (int, error) {
 	str, err := c.String(section, option)
 	if err != nil {
@@ -143,7 +145,7 @@ func (c *Config) Int(section, option string) (int, error) {
 	return CcStr.ParseInt(str), nil
 }
 
-//读取特定配置节下的特定配置项（不存或失败时返回默认值）
+//IntEx 读取特定配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) IntEx(section, option string, defaultValue int) int {
 	str, _ := c.String(section, option)
 	if str == "" {
@@ -153,7 +155,7 @@ func (c *Config) IntEx(section, option string, defaultValue int) int {
 	return CcStr.ParseInt(str)
 }
 
-//读取默认配置节下的特定配置项
+//DefaultBool 读取默认配置节下的特定配置项
 func (c *Config) DefaultBool(option string) (bool, error) {
 	str, err := c.DefaultString(option)
 	if err != nil {
@@ -163,7 +165,7 @@ func (c *Config) DefaultBool(option string) (bool, error) {
 	return CcStr.ParseBool(str), nil
 }
 
-//读取默认配置节下的特定配置项（不存或失败时返回默认值）
+//DefaultBoolEx 读取默认配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) DefaultBoolEx(option string, defaultValue bool) bool {
 	str, _ := c.DefaultString(option)
 	if str == "" {
@@ -173,7 +175,7 @@ func (c *Config) DefaultBoolEx(option string, defaultValue bool) bool {
 	return CcStr.ParseBool(str)
 }
 
-//读取特定配置节下的特定配置项
+//Bool 读取特定配置节下的特定配置项
 func (c *Config) Bool(section, option string) (bool, error) {
 	str, err := c.String(section, option)
 	if err != nil {
@@ -183,7 +185,7 @@ func (c *Config) Bool(section, option string) (bool, error) {
 	return CcStr.ParseBool(str), nil
 }
 
-//读取特定配置节下的特定配置项（不存或失败时返回默认值）
+//BoolEx 读取特定配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) BoolEx(section, option string, defaultValue bool) bool {
 	str, _ := c.String(section, option)
 	if str == "" {
@@ -193,7 +195,7 @@ func (c *Config) BoolEx(section, option string, defaultValue bool) bool {
 	return CcStr.ParseBool(str)
 }
 
-//读取默认配置节下的特定配置项
+//DefaultFloat 读取默认配置节下的特定配置项
 func (c *Config) DefaultFloat(option string) (float32, error) {
 	str, err := c.DefaultString(option)
 	if err != nil {
@@ -203,7 +205,7 @@ func (c *Config) DefaultFloat(option string) (float32, error) {
 	return CcStr.ParseFloat(str), nil
 }
 
-//读取默认配置节下的特定配置项（不存或失败时返回默认值）
+//DefaultFloatEx 读取默认配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) DefaultFloatEx(option string, defaultValue float32) float32 {
 	str, _ := c.DefaultString(option)
 	if str == "" {
@@ -213,7 +215,7 @@ func (c *Config) DefaultFloatEx(option string, defaultValue float32) float32 {
 	return CcStr.ParseFloat(str)
 }
 
-//读取特定配置节下的特定配置项
+//Float 读取特定配置节下的特定配置项
 func (c *Config) Float(section, option string) (float32, error) {
 	str, err := c.String(section, option)
 	if err != nil {
@@ -223,7 +225,7 @@ func (c *Config) Float(section, option string) (float32, error) {
 	return CcStr.ParseFloat(str), nil
 }
 
-//读取特定配置节下的特定配置项（不存或失败时返回默认值）
+//FloatEx 读取特定配置节下的特定配置项（不存或失败时返回默认值）
 func (c *Config) FloatEx(section, option string, defaultValue float32) float32 {
 	str, _ := c.String(section, option)
 	if str == "" {
