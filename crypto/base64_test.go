@@ -7,13 +7,13 @@ import (
 func TestBase64(t *testing.T) {
 	var str1 = "test base64"
 
-	data, err := EncodeString(str1)
+	data, err := CcBase64.EncodeString(str1)
 	if err != nil {
 		t.Error("TestBase64 failed EncodeString:", err)
 		return
 	}
 
-	str2, err := DecodeString(data)
+	str2, err := CcBase64.DecodeString(data)
 	if err != nil {
 		t.Error("TestBase64 failed DecodeString:", err)
 		return
