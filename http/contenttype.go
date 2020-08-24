@@ -1,19 +1,40 @@
 package http
 
+//ContentType ContentType枚举定义
 type ContentType int
 
 const (
+	//TextPlain 普通文本
 	TextPlain ContentType = iota
-	TextHtml
-	TextXml
-	ApplicationJson
-	ApplicationXml
-	ApplicationXWwwFormUrlEncoded
+
+	//TextHTML Html文本
+	TextHTML
+
+	//TextXML Xml文本
+	TextXML
+
+	//ApplicationJSON Json内容
+	ApplicationJSON
+
+	// ApplicationXML Xml内容
+	ApplicationXML
+
+	//ApplicationXWwwFormURLEncoded URL编码后的表单内容
+	ApplicationXWwwFormURLEncoded
+
+	//MultipartFormData 多分部表单数据
 	MultipartFormData
+
+	//MultipartMixed 多分部混合数据
 	MultipartMixed
+
+	//ImageGif GIF图片
 	ImageGif
+
+	//ImageJpeg JPEG图片
 	ImageJpeg
 
+	//UnknownType 未知类型
 	UnknownType //请在此之前添加新的定义
 )
 
@@ -22,15 +43,15 @@ func (ct ContentType) String() string {
 	switch ct {
 	case TextPlain:
 		return "text/plain"
-	case TextHtml:
+	case TextHTML:
 		return "text/html"
-	case TextXml:
+	case TextXML:
 		return "text/xml"
-	case ApplicationJson:
+	case ApplicationJSON:
 		return "application/json"
-	case ApplicationXml:
+	case ApplicationXML:
 		return "application/xml"
-	case ApplicationXWwwFormUrlEncoded:
+	case ApplicationXWwwFormURLEncoded:
 		return "application/x-www-form-urlencoded"
 	case MultipartFormData:
 		return "multipart/form-data"
@@ -44,11 +65,11 @@ func (ct ContentType) String() string {
 	return "UnknownType"
 }
 
-//获取ContentType的整数值
+//Value 获取ContentType的整数值
 func (ct ContentType) Value() int {
 	if ct >= TextPlain && ct < UnknownType {
 		return int(ct)
-	} else {
-		return int(UnknownType)
 	}
+
+	return int(UnknownType)
 }

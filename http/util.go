@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/redochen/tools/crypto"
 	"io"
 	"io/ioutil"
 	"net"
@@ -15,14 +14,17 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	. "github.com/redochen/tools/crypto"
 )
 
 var (
-	DialTimeoutSeconds time.Duration = 30 //超时秒数
+	//DialTimeoutSeconds 超时秒数
+	DialTimeoutSeconds time.Duration = 30
 )
 
-//HTML解码
-func HtmlDecode(html string) string {
+//HTMLDecode HTML解码
+func HTMLDecode(html string) string {
 
 	//解码<
 	lt, _ := regexp.Compile(`&lt;`)
@@ -39,14 +41,14 @@ func HtmlDecode(html string) string {
 	return html
 }
 
-//URL编码
-func UrlEncode(path string) string {
+//URLEncode URL编码
+func URLEncode(path string) string {
 	u := &url.URL{Path: path}
 	return u.String()
 }
 
-//创建新的HTTP请求（重写http.NewRequest方法，因为该方法会对URL进行转码）
-func NewHttpRequest(r *Request, body io.Reader) (*http.Request, error) {
+//NewHTTPRequest 创建新的HTTP请求（重写http.NewRequest方法，因为该方法会对URL进行转码）
+func NewHTTPRequest(r *Request, body io.Reader) (*http.Request, error) {
 	if nil == r {
 		return nil, errors.New("request is nil")
 	}
@@ -57,7 +59,7 @@ func NewHttpRequest(r *Request, body io.Reader) (*http.Request, error) {
 	}
 
 	//httpReq, err := http.NewRequest(method, r.Url, body)
-	httpReq, err := NewRawRequest(method, r.Url, r.SetOpaque, body)
+	httpReq, err := NewRawRequest(method, r.URL, r.SetOpaque, body)
 	if err != nil {
 		return nil, err
 	}
@@ -118,16 +120,16 @@ func NewHttpRequest(r *Request, body io.Reader) (*http.Request, error) {
 	return httpReq, nil
 }
 
-//创建新的HTTP请求（重写http.NewRequest方法，因为该方法会对URL进行转码）
+//NewRawRequest 创建新的HTTP请求（重写http.NewRequest方法，因为该方法会对URL进行转码）
 func NewRawRequest(method, urlStr string, setOpaque bool, body io.Reader) (*http.Request, error) {
-	httpUrl, err := url.Parse(urlStr)
+	httpURL, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
 
 	//设置不转码路径。注意：这里带queryString的url会有问题
 	if setOpaque {
-		httpUrl.Opaque = urlStr
+		httpURL.Opaque = urlStr
 	}
 
 	rc, ok := body.(io.ReadCloser)
@@ -137,13 +139,13 @@ func NewRawRequest(method, urlStr string, setOpaque bool, body io.Reader) (*http
 
 	httpReq := &http.Request{
 		Method:     method,
-		URL:        httpUrl,
+		URL:        httpURL,
 		Proto:      "HTTP/1.1",
 		ProtoMajor: 1,
 		ProtoMinor: 1,
 		Header:     make(http.Header),
 		Body:       rc,
-		Host:       httpUrl.Host,
+		Host:       httpURL.Host,
 	}
 
 	if body != nil {
@@ -160,7 +162,7 @@ func NewRawRequest(method, urlStr string, setOpaque bool, body io.Reader) (*http
 	return httpReq, nil
 }
 
-//获取原始请求参数
+//GetRawParameter 获取原始请求参数
 func GetRawParameter(r *http.Request) (string, error) {
 	if nil == r {
 		return "", errors.New("request is nil")
@@ -179,7 +181,7 @@ func GetRawParameter(r *http.Request) (string, error) {
 	return string(body), nil
 }
 
-//获取HTTP响应体
+//GetBody 获取HTTP响应体
 func GetBody(r *http.Response) (string, error) {
 	if nil == r {
 		return "", errors.New("response is nil")
@@ -221,16 +223,16 @@ func GetBody(r *http.Response) (string, error) {
 	return body, nil
 }
 
-//获取Cookies
+//GetCookies 获取Cookies
 func GetCookies(r *http.Response) ([]*http.Cookie, error) {
 	if nil == r {
 		return nil, errors.New("response is nil")
-	} else {
-		return r.Cookies(), nil
 	}
+
+	return r.Cookies(), nil
 }
 
-//打印Cookies
+//PrintCookies 打印Cookies
 func PrintCookies(cookies []*http.Cookie, page string) {
 	if cookies == nil {
 		println(fmt.Sprintf("[%s] cookies is null", page))
@@ -257,14 +259,14 @@ func PrintCookies(cookies []*http.Cookie, page string) {
 	}
 }
 
-//检测重定向
+//CheckRedirect 检测重定向
 func CheckRedirect(r *http.Request, via []*http.Request) error {
 	println(fmt.Sprintf("After %d redirects, the last url is %s.",
 		len(via), r.URL.RequestURI()))
 	return nil
 }
 
-//处理连接超时
+//DialContext 处理连接超时
 func DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
 	deadline := time.Now().Add(DialTimeoutSeconds * time.Second)
 	c, err := net.DialTimeout(network, addr, time.Duration(DialTimeoutSeconds*time.Second))
@@ -275,13 +277,13 @@ func DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
 	return c, nil
 }
 
-//创建HTTPS认证字符串
+//HttpsBasicAuthorization 创建HTTPS认证字符串
 func HttpsBasicAuthorization(username, password string) (string, error) {
 	if len(username) <= 0 {
 		return "", nil
 	}
 
-	auth, err := crypto.EncodeString(username + ":" + password)
+	auth, err := CcBase64.EncodeString(username + ":" + password)
 	if err != nil {
 		return "", err
 	}
@@ -289,7 +291,7 @@ func HttpsBasicAuthorization(username, password string) (string, error) {
 	return "Basic " + auth, nil
 }
 
-//获取查询字符串
+//GetQueryString 获取查询字符串
 func GetQueryString(m map[string]string) string {
 	data := url.Values{}
 	for k, v := range m {
