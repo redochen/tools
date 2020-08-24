@@ -2,7 +2,7 @@ package time
 
 import (
 	"fmt"
-	str "github.com/redochen/tools/string"
+	CcStr "github.com/redochen/tools/string"
 	"strings"
 	"time"
 )
@@ -157,15 +157,15 @@ func GetNowStringEx(format string, isUtcTime bool) string {
 	if isUtcTime {
 		t = t.UTC()
 	}
-	return str.FormatTime(t, format)
+	return CcStr.FormatTime(t, format)
 }
 
 /**
 * 将日期时间格式化字符串后再转换成64位整数
  */
 func TimeToInt64(t time.Time, format string) int64 {
-	s := str.FormatTime(t, format)
-	return str.ParseInt64(s)
+	s := CcStr.FormatTime(t, format)
+	return CcStr.ParseInt64(s)
 }
 
 /**

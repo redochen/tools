@@ -1,43 +1,32 @@
 package function
 
 import (
-	. "github.com/redochen/tools/log"
 	"reflect"
 	"runtime"
 	"strings"
 	"time"
+
+	log "github.com/redochen/tools/log"
 )
 
-var (
-	CcFunctions = NewFuncContextMap()
-)
-
-/**
-* 获取函数名称
- */
+//GetFunctionName 获取函数名称
 func GetFunctionName(i interface{}, seps ...rune) string {
 	return getFuncName(reflect.ValueOf(i).Pointer(), seps...)
 }
 
-/**
-* 获取调用者名称
- */
+//GetCallerFuncName 获取调用者名称
 func GetCallerFuncName(seps ...rune) string {
 	pc, _, _, _ := runtime.Caller(3)
 	return getFuncName(pc, seps...)
 }
 
-/**
-* 获取当前方法名称
- */
+//GetCurrentFuncName 获取当前方法名称
 func GetCurrentFuncName(seps ...rune) string {
 	pc, _, _, _ := runtime.Caller(2)
 	return getFuncName(pc, seps...)
 }
 
-/**
-* 获取函数名称
- */
+//getFuncName 获取函数名称
 func getFuncName(pc uintptr, seps ...rune) string {
 	fn := runtime.FuncForPC(pc).Name()
 
@@ -58,19 +47,15 @@ func getFuncName(pc uintptr, seps ...rune) string {
 	return ""
 }
 
-/**
-* 检查错误
- */
+//CheckPanic 检查错误
 func CheckPanic() {
 	name := GetCallerFuncName()
 	if err := recover(); err != nil {
-		Logger.Fatalf(name, err)
+		log.Fatalf(name, err)
 	}
 }
 
-/**
-* 调用函数：fn要调用的方法；args方法参数
- */
+//InvokeFunc 调用函数：fn要调用的方法；args方法参数
 func InvokeFunc(fn interface{}, args ...interface{}) interface{} {
 	defer CheckPanic()
 
@@ -104,24 +89,20 @@ func InvokeFunc(fn interface{}, args ...interface{}) interface{} {
 	return nil
 }
 
-/**
-*定时调用函数：interval时间间隔；runRightNow是否立即执行一次；name方法名称；fn要调用的方法；args方法参数
- */
+//InvokeTicker 定时调用函数：interval时间间隔；runRightNow是否立即执行一次；name方法名称；fn要调用的方法；args方法参数
 func InvokeTicker(interval time.Duration, runRightNow bool, name string, fn interface{}, args ...interface{}) {
 	stop := make(chan bool, 1)
 	deadline := time.Now().AddDate(100, 0, 0)
 	InvokeTickerEx(interval, deadline, stop, runRightNow, name, fn, args...)
 }
 
-/**
-*定时调用函数：interval时间间隔；deadline过期时间；stop停止执行控制通道；runRightNow是否立即执行一次；name方法名称；fn要调用的方法；args方法参数
- */
+//InvokeTickerEx 定时调用函数：interval时间间隔；deadline过期时间；stop停止执行控制通道；runRightNow是否立即执行一次；name方法名称；fn要调用的方法；args方法参数
 func InvokeTickerEx(interval time.Duration, deadline time.Time, stop <-chan bool,
 	runRightNow bool, name string, fn interface{}, args ...interface{}) {
 	defer CheckPanic()
 
 	if time.Now().After(deadline) {
-		Logger.Errorf("%s invalid deadline: %v", name, deadline)
+		log.Errorf("%s invalid deadline: %v", name, deadline)
 		return
 	}
 
@@ -137,21 +118,19 @@ Loop:
 		select {
 		case <-t.C:
 			if time.Now().After(deadline) {
-				Logger.Debugf("%s was dead", name)
+				log.Debugf("%s was dead", name)
 				break Loop
 			} else {
 				InvokeFunc(fn, args...)
 			}
 		case <-stop:
-			Logger.Debugf("%s was stopped", name)
+			log.Debugf("%s was stopped", name)
 			break Loop
 		}
 	}
 }
 
-/**
-* 启用routine调用函数：result执行结果；name方法名称；fn要调用的方法；args方法参数
- */
+//goFunc 启用routine调用函数：result执行结果；name方法名称；fn要调用的方法；args方法参数
 func (rm *FuncContextMap) goFunc(result chan<- interface{}, name string, fn interface{}, args ...interface{}) *FuncContext {
 	defer CheckPanic()
 
@@ -170,7 +149,7 @@ func (rm *FuncContextMap) goFunc(result chan<- interface{}, name string, fn inte
 	return c
 }
 
-//启用routine调用Ticker：interval时间间隔；deadline过期时间；stop停止执行控制通道；runRightNow是否立即执行一次；name方法名称；fn要调用的方法；args方法参数
+//startTicker 启用routine调用Ticker：interval时间间隔；deadline过期时间；stop停止执行控制通道；runRightNow是否立即执行一次；name方法名称；fn要调用的方法；args方法参数
 func (rm *FuncContextMap) startTicker(interval time.Duration, deadline time.Time, stop <-chan bool,
 	runRightNow bool, name string, fn interface{}, args ...interface{}) *FuncContext {
 	defer CheckPanic()
@@ -191,21 +170,17 @@ func (rm *FuncContextMap) startTicker(interval time.Duration, deadline time.Time
 	return c
 }
 
-/**
-* 调用函数：name方法名称；fn要调用的方法；args方法参数
- */
+//InvokeFunc 调用函数：name方法名称；fn要调用的方法；args方法参数
 func (rm *FuncContextMap) InvokeFunc(name string, fn interface{}, args ...interface{}) interface{} {
 	return rm.InvokeFuncWithTimeout(999999*time.Hour, name, fn, args...)
 }
 
-/**
-* 调用函数：timeout超时时间；name方法名称；fn要调用的方法；args方法参数
- */
+//InvokeFuncWithTimeout 调用函数：timeout超时时间；name方法名称；fn要调用的方法；args方法参数
 func (rm *FuncContextMap) InvokeFuncWithTimeout(timeout time.Duration, name string, fn interface{}, args ...interface{}) interface{} {
 	defer CheckPanic()
 
 	if timeout < 0 {
-		Logger.Errorf("%s invalid timeout: %d", name, timeout)
+		log.Errorf("%s invalid timeout: %d", name, timeout)
 		return nil
 	}
 
@@ -219,13 +194,13 @@ Loop:
 	for {
 		select {
 		case result = <-ch:
-			Logger.Debugf("%s ran to done", name)
+			log.Debugf("%s ran to done", name)
 			break Loop
 		case <-r.stop:
-			Logger.Debugf("%s has been stopped", name)
+			log.Debugf("%s has been stopped", name)
 			break Loop
 		case <-time.After(timeout):
-			Logger.Debugf("%s has timed out", name)
+			log.Debugf("%s has timed out", name)
 			break Loop
 		}
 	}
@@ -233,23 +208,19 @@ Loop:
 	return result
 }
 
-/**
-*定时执行任务：interval时间间隔；runRightNow是否执行一次；name方法名称；fn要调用的方法；args方法参数
- */
+//StartTicker 定时执行任务：interval时间间隔；runRightNow是否执行一次；name方法名称；fn要调用的方法；args方法参数
 func (rm *FuncContextMap) StartTicker(interval time.Duration, runRightNow bool, name string, fn interface{}, args ...interface{}) {
 	deadline := time.Now().AddDate(100, 0, 0)
 	rm.StartTickerWithDeadline(interval, deadline, runRightNow, name, fn, args...)
 }
 
-/**
-*定时执行任务：interval时间间隔；deadline过期时间；runRightNow是否执行一次；name方法名称；fn要调用的方法；args方法参数
- */
+//StartTickerWithDeadline 定时执行任务：interval时间间隔；deadline过期时间；runRightNow是否执行一次；name方法名称；fn要调用的方法；args方法参数
 func (rm *FuncContextMap) StartTickerWithDeadline(interval time.Duration, deadline time.Time,
 	runRightNow bool, name string, fn interface{}, args ...interface{}) {
 	defer CheckPanic()
 
 	if time.Now().After(deadline) {
-		Logger.Errorf("%s invalid deadline: %v", name, deadline)
+		log.Errorf("%s invalid deadline: %v", name, deadline)
 		return
 	}
 
@@ -261,21 +232,19 @@ Loop:
 		select {
 		case <-r.stop:
 			s <- true
-			Logger.Debugf("%s has been stopped", name)
+			log.Debugf("%s has been stopped", name)
 			break Loop
 		}
 	}
 }
 
-/**
-* 停止routine：name方法名称
- */
+//StopFunc 停止routine：name方法名称
 func (rm *FuncContextMap) StopFunc(name string) {
 	defer CheckPanic()
 
 	r, ok := rm.funcs[name]
 	if !ok {
-		Logger.Errorf("routine %s not found", name)
+		log.Errorf("routine %s not found", name)
 		return
 	}
 
