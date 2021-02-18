@@ -122,10 +122,10 @@ func ParseTime(s, format string, utc bool) time.Time {
 	if utc {
 		t, _ := time.Parse(layout, s)
 		return t
-	} else {
-		t, _ := time.ParseInLocation(layout, s, time.Now().Location())
-		return t
 	}
+
+	t, _ := time.ParseInLocation(layout, s, time.Now().Location())
+	return t
 }
 
 //ParseTimeEx 从字符串中解析，解析失败时返回默认值
@@ -175,9 +175,9 @@ func ChangeDateTimeFormat(dateTime, srcFormat, dstFormat string) string {
 	dt := ParseTime(dateTime, srcFormat, true)
 	if dt.IsZero() {
 		return dateTime
-	} else {
-		return FormatTime(dt, dstFormat)
 	}
+
+	return FormatTime(dt, dstFormat)
 }
 
 //TimeFormatToLayout 将格式为：yyyy-MM-dd HH:mm:ss 转换 "2006-01-02 15:04:05"
@@ -259,8 +259,8 @@ func SubString(str string, begin, length int) (substr string) {
 	return string(rs[begin:end])
 }
 
-//NewGuid 获取Guid
-func NewGuid() (string, error) {
+//NewGUID 获取Guid
+func NewGUID() (string, error) {
 	guid := make([]byte, 16)
 	n, err := io.ReadFull(rand.Reader, guid)
 	if n != len(guid) || err != nil {
