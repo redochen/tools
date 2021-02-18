@@ -1,7 +1,6 @@
 package log
 
 import (
-	//log "github.com/redochen/log4go"
 	"testing"
 	"time"
 )
@@ -12,11 +11,6 @@ func TestLog(t *testing.T) {
 			t.Logf("TestLog failed:%v", err)
 		}
 	}()
-
-	//log.Info("normal info test ...")
-	//log.Debug("normal debug test ...")
-	//log.Error("normal error test ...")
-	//log.Close()
 
 	Debug("test debug log")
 	Debugf("test formatted debug log: %v", time.Now())

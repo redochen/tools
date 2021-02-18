@@ -2,9 +2,10 @@ package log
 
 import (
 	"fmt"
-	log "github.com/redochen/log4go"
 	"runtime"
 	"runtime/debug"
+
+	log "github.com/redochen/log4go"
 )
 
 func init() {

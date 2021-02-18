@@ -2,11 +2,13 @@ package time
 
 import (
 	"fmt"
-	CcStr "github.com/redochen/tools/string"
 	"strings"
 	"time"
+
+	CcStr "github.com/redochen/tools/string"
 )
 
+//DaysOfMonth 每月的天数
 var DaysOfMonth = map[time.Month]int{
 	time.January:   31,
 	time.February:  28,
@@ -22,14 +24,14 @@ var DaysOfMonth = map[time.Month]int{
 	time.December:  31,
 }
 
-//日期差
+//DateDifference 日期差
 type DateDifference struct {
 	Years  int
 	Months int
 	Days   int
 }
 
-//是否为润年
+//IsLeapYear 是否为润年
 func IsLeapYear(year int) bool {
 	ret := false
 	if year%4 == 0 {
@@ -42,7 +44,7 @@ func IsLeapYear(year int) bool {
 	return ret
 }
 
-//计算日期差
+//CalculateDateDifference 计算日期差
 func CalculateDateDifference(start, end time.Time) *DateDifference {
 	var borrowed = false
 	var daysBorrowed = 0
@@ -89,7 +91,7 @@ func CalculateDateDifference(start, end time.Time) *DateDifference {
 	return diff
 }
 
-//去掉日期中的连接符-/和空格
+//RemoveDateSeparator 去掉日期中的连接符-/和空格
 func RemoveDateSeparator(date string) string {
 	if len(date) > 0 {
 		separators := []string{"-", "/", " "}
@@ -100,20 +102,23 @@ func RemoveDateSeparator(date string) string {
 	return date
 }
 
-//获取日期分隔符
+//GetDateSeparator 获取日期分隔符
 func GetDateSeparator(date string) string {
-	if len(date) > 0 {
-		separators := []string{"-", "/", " ", "."}
-		for _, sep := range separators {
-			if strings.Contains(date, sep) {
-				return sep
-			}
+	if len(date) <= 0 {
+		return ""
+	}
+
+	separators := []string{"-", "/", " ", "."}
+	for _, sep := range separators {
+		if strings.Contains(date, sep) {
+			return sep
 		}
 	}
+
 	return ""
 }
 
-//将YYYYMMDD格式的日期转换为YYYY-MM-DD格式或者YYYY-MM格式
+//AddDateSeparator 将YYYYMMDD格式的日期转换为YYYY-MM-DD格式或者YYYY-MM格式
 func AddDateSeparator(date, separator string, incDay bool) string {
 	temp := RemoveDateSeparator(date)
 	if len(temp) < 8 {
@@ -122,18 +127,18 @@ func AddDateSeparator(date, separator string, incDay bool) string {
 
 	if incDay {
 		return fmt.Sprintf("%s%s%s%s%s", temp[:4], separator, temp[4:6], separator, temp[6:8])
-	} else {
-		return fmt.Sprintf("%s%s%s", temp[:4], separator, temp[4:6])
 	}
+
+	return fmt.Sprintf("%s%s%s", temp[:4], separator, temp[4:6])
 }
 
-//将日期时间字符串中的时间信息去掉
+//RemoveTimeFromDateTime 将日期时间字符串中的时间信息去掉
 func RemoveTimeFromDateTime(date string) string {
 	separator := GetDateSeparator(date)
 	return AddDateSeparator(date, separator, true)
 }
 
-//获取短日期字符串
+//GetShortDate 获取短日期字符串
 func GetShortDate(date string) string {
 	temp := RemoveDateSeparator(date)
 	if len(temp) < 8 {
@@ -142,16 +147,12 @@ func GetShortDate(date string) string {
 	return fmt.Sprintf("%s%s", temp[4:6], temp[6:8])
 }
 
-/**
-* 获取当前日期时间字符串
- */
+//GetNowString 获取当前日期时间字符串
 func GetNowString() string {
 	return GetNowStringEx("yyyy-MM-dd HH:mm:ss", false)
 }
 
-/**
-* 获取当前日期时间字符串
- */
+//GetNowStringEx 获取当前日期时间字符串
 func GetNowStringEx(format string, isUtcTime bool) string {
 	t := time.Now()
 	if isUtcTime {
@@ -160,24 +161,18 @@ func GetNowStringEx(format string, isUtcTime bool) string {
 	return CcStr.FormatTime(t, format)
 }
 
-/**
-* 将日期时间格式化字符串后再转换成64位整数
- */
-func TimeToInt64(t time.Time, format string) int64 {
+//ToInt64 将日期时间格式化字符串后再转换成64位整数
+func ToInt64(t time.Time, format string) int64 {
 	s := CcStr.FormatTime(t, format)
 	return CcStr.ParseInt64(s)
 }
 
-/**
-* 将日期时间转换成 yyyy-MM-dd 00:00:00:000
- */
+//ToDayStart 将日期时间转换成 yyyy-MM-dd 00:00:00:000
 func ToDayStart(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
 
-/**
-* 将日期时间转换成 yyyy-MM-dd 23:59:59:999
- */
+//ToDayEnd 将日期时间转换成 yyyy-MM-dd 23:59:59:999
 func ToDayEnd(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 59, t.Location())
 }
