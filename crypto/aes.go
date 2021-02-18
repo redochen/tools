@@ -7,34 +7,22 @@ import (
 )
 
 var (
-	//CcAes AES帮助类实例
-	CcAes = newAesHelper()
-
 	defaultAesKey = "oO3OEFhB7ALGGzAm"
 	defaultAesIvs = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 )
 
-//AesHelper AES帮助类
-type AesHelper struct {
+//AesEncryptString AES加密字符串
+func AesEncryptString(plain string) ([]byte, error) {
+	return AesEncryptEx(plain, nil, nil)
 }
 
-//获取一个新的AesHelper实例
-func newAesHelper() *AesHelper {
-	return &AesHelper{}
+//AesEncrypt AES加密
+func AesEncrypt(plain, key string, iv []byte) ([]byte, error) {
+	return AesEncryptEx(plain, []byte(key), iv)
 }
 
-//EncryptString AES加密字符串
-func (h *AesHelper) EncryptString(plain string) ([]byte, error) {
-	return h.EncryptEx(plain, nil, nil)
-}
-
-//Encrypt AES加密
-func (h *AesHelper) Encrypt(plain, key string, iv []byte) ([]byte, error) {
-	return h.EncryptEx(plain, []byte(key), iv)
-}
-
-//EncryptEx AES加密
-func (h *AesHelper) EncryptEx(plain string, key, iv []byte) ([]byte, error) {
+//AesEncryptEx AES加密
+func AesEncryptEx(plain string, key, iv []byte) ([]byte, error) {
 	if "" == plain {
 		return nil, errors.New("invalid plain text")
 	}
@@ -60,18 +48,18 @@ func (h *AesHelper) EncryptEx(plain string, key, iv []byte) ([]byte, error) {
 	return crypt, nil
 }
 
-//DecryptString AES解密字符串
-func (h *AesHelper) DecryptString(crypt []byte) (string, error) {
-	return h.DecryptEx(crypt, nil, nil)
+//AesDecryptString AES解密字符串
+func AesDecryptString(crypt []byte) (string, error) {
+	return AesDecryptEx(crypt, nil, nil)
 }
 
-//Decrypt AES解密
-func (h *AesHelper) Decrypt(crypt []byte, key string, iv []byte) (string, error) {
-	return h.DecryptEx(crypt, []byte(key), iv)
+//AesDecrypt AES解密
+func AesDecrypt(crypt []byte, key string, iv []byte) (string, error) {
+	return AesDecryptEx(crypt, []byte(key), iv)
 }
 
-//DecryptEx AES解密
-func (h *AesHelper) DecryptEx(crypt []byte, key, iv []byte) (string, error) {
+//AesDecryptEx AES解密
+func AesDecryptEx(crypt []byte, key, iv []byte) (string, error) {
 	if nil == crypt || len(crypt) <= 0 {
 		return "", errors.New("invalid crypt bytes")
 	}

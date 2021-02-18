@@ -10,17 +10,17 @@ const (
 	lettersAll    = lettersNumber + lettersAlpha
 )
 
-//获取随机数字字符串
+//GetRandomNumber 获取随机数字字符串
 func GetRandomNumber(length int) string {
 	return GetRandomText(length, false, true)
 }
 
-//获取随机字母字符串
+//GetRandomString 获取随机字母字符串
 func GetRandomString(length int) string {
 	return GetRandomText(length, true, false)
 }
 
-//获取随机字符串。includeAlpha－是否包含字母；includeNumber－则否包含数字
+//GetRandomText 获取随机字符串。includeAlpha－是否包含字母；includeNumber－则否包含数字
 func GetRandomText(length int, includeAlpha, includeNumber bool) string {
 	var letters string
 

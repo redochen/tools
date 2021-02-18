@@ -19,9 +19,9 @@ func GetTypeEx(v interface{}, getUnderlyingType bool) reflect.Type {
 
 	if getUnderlyingType {
 		return GetUnderlyingType(t)
-	} else {
-		return t
 	}
+
+	return t
 }
 
 //GetUnderlyingType 获取底层类型
@@ -77,9 +77,9 @@ func New(t reflect.Type) interface{} {
 func NewEx(t reflect.Type, byUnderlyingType bool) interface{} {
 	if byUnderlyingType {
 		return New(GetUnderlyingType(t))
-	} else {
-		return New(t)
 	}
+
+	return New(t)
 }
 
 //DeepCopy 深拷贝对象
@@ -116,7 +116,7 @@ func GetLengthOfCollection(item interface{}) (length int) {
 	return
 }
 
-//Object类
+//Object 对象类
 type Object struct {
 	object interface{}
 }

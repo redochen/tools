@@ -87,27 +87,27 @@ func (mc *memoryCache) getWithoutLock(key interface{}, del bool) interface{} {
 	return nil
 }
 
-//设置缓存
+//SetString 设置缓存
 func SetString(key interface{}, value string, duration ...time.Duration) {
 	SetAnything(key, value, duration...)
 }
 
-//设置缓存
+//SetInt 设置缓存
 func SetInt(key interface{}, value int, duration ...time.Duration) {
 	SetAnything(key, value, duration...)
 }
 
-//设置缓存
+//SetBool 设置缓存
 func SetBool(key interface{}, value bool, duration ...time.Duration) {
 	SetAnything(key, value, duration...)
 }
 
-//设置缓存
+//SetFloat 设置缓存
 func SetFloat(key interface{}, value float32, duration ...time.Duration) {
 	SetAnything(key, value, duration...)
 }
 
-//设置缓存
+//SetAnything 设置缓存
 func SetAnything(key interface{}, value interface{}, duration ...time.Duration) {
 	dur := neverExpiry
 
@@ -123,7 +123,7 @@ func SetAnything(key interface{}, value interface{}, duration ...time.Duration) 
 	mc.set(key, value, dur)
 }
 
-//读取缓存
+//GetString 读取缓存
 func GetString(key interface{}, deleteOnGet ...bool) string {
 	val := GetAnything(key, deleteOnGet...)
 	if val != nil {
@@ -133,7 +133,7 @@ func GetString(key interface{}, deleteOnGet ...bool) string {
 	}
 }
 
-//读取缓存
+//GetInt 读取缓存
 func GetInt(key interface{}, deleteOnGet ...bool) int {
 	val := GetAnything(key, deleteOnGet...)
 	if val != nil {
@@ -143,7 +143,7 @@ func GetInt(key interface{}, deleteOnGet ...bool) int {
 	}
 }
 
-//读取缓存
+//GetBool 读取缓存
 func GetBool(key interface{}, deleteOnGet ...bool) bool {
 	val := GetAnything(key, deleteOnGet...)
 	if val != nil {
@@ -153,7 +153,7 @@ func GetBool(key interface{}, deleteOnGet ...bool) bool {
 	}
 }
 
-//读取缓存
+//GetFloat 读取缓存
 func GetFloat(key interface{}, deleteOnGet ...bool) float32 {
 	val := GetAnything(key, deleteOnGet...)
 	if val != nil {
@@ -163,7 +163,7 @@ func GetFloat(key interface{}, deleteOnGet ...bool) float32 {
 	}
 }
 
-//读取缓存
+//GetAnything 读取缓存
 func GetAnything(key interface{}, deleteOnGet ...bool) interface{} {
 	del := false
 

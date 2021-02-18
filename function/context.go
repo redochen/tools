@@ -5,25 +5,19 @@ import (
 	"sync"
 )
 
-/**
-* func context
- */
+//FuncContext context of function
 type FuncContext struct {
 	name string    //func name
 	stop chan bool //stop chan
 }
 
-/**
-* func context map
- */
+//FuncContextMap map for FuncContext
 type FuncContextMap struct {
 	lock  *sync.RWMutex
 	funcs map[string]*FuncContext
 }
 
-/**
-* return new instance of FuncContextMap
- */
+//NewFuncContextMap returns new instance of FuncContextMap
 func NewFuncContextMap() *FuncContextMap {
 	m := &FuncContextMap{
 		lock: new(sync.RWMutex),
@@ -34,9 +28,7 @@ func NewFuncContextMap() *FuncContextMap {
 	return m
 }
 
-/**
-* register func context
- */
+//register func context
 func (m *FuncContextMap) register(name string) (*FuncContext, error) {
 	r := &FuncContext{name: name}
 
@@ -54,9 +46,7 @@ func (m *FuncContextMap) register(name string) (*FuncContext, error) {
 	return r, nil
 }
 
-/**
-* unregister func context
- */
+//unregister func context
 func (m *FuncContextMap) unregister(name string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()

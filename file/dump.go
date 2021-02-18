@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-//保存到文件
+//DumpFile 保存到文件
 func DumpFile(path, content string) error {
 	fe, err := Open(path, true, false)
 	if err != nil {

@@ -3,8 +3,9 @@ package json
 import (
 	"encoding/json"
 	"errors"
-	"github.com/redochen/tools/object"
 	"reflect"
+
+	"github.com/redochen/tools/object"
 )
 
 //GetString 转换成字符串
@@ -22,9 +23,9 @@ func Serialize(v interface{}) (string, error) {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return "", err
-	} else {
-		return string(b), nil
 	}
+
+	return string(b), nil
 }
 
 //FromString 从字符串解析

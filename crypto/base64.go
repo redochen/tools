@@ -5,27 +5,13 @@ import (
 	"errors"
 )
 
-var (
-	//CcBase64 Base64帮助类实例
-	CcBase64 = newBase64Helper()
-)
-
-//Base64Helper Base64帮助类
-type Base64Helper struct {
+//Base64EncodeString Base64编码字符串
+func Base64EncodeString(plain string) (string, error) {
+	return Base64EncodeData([]byte(plain))
 }
 
-//获取一个新的Base64Helper实例
-func newBase64Helper() *Base64Helper {
-	return &Base64Helper{}
-}
-
-//EncodeString Base64编码字符串
-func (h *Base64Helper) EncodeString(plain string) (string, error) {
-	return h.EncodeData([]byte(plain))
-}
-
-//EncodeData Base64编码数据
-func (h *Base64Helper) EncodeData(plain []byte) (string, error) {
+//Base64EncodeData Base64编码数据
+func Base64EncodeData(plain []byte) (string, error) {
 	if nil == plain || len(plain) <= 0 {
 		return "", errors.New("invalid plain text")
 	}
@@ -33,9 +19,9 @@ func (h *Base64Helper) EncodeData(plain []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(plain), nil
 }
 
-//DecodeString Base64解码字符串
-func (h *Base64Helper) DecodeString(crypt string) (string, error) {
-	b, err := h.DecodeData(crypt)
+//Base64DecodeString Base64解码字符串
+func Base64DecodeString(crypt string) (string, error) {
+	b, err := Base64DecodeData(crypt)
 	if err != nil {
 		return "", err
 	}
@@ -43,8 +29,8 @@ func (h *Base64Helper) DecodeString(crypt string) (string, error) {
 	return string(b), nil
 }
 
-//DecodeData Base64解码数据
-func (h *Base64Helper) DecodeData(crypt string) ([]byte, error) {
+//Base64DecodeData Base64解码数据
+func Base64DecodeData(crypt string) ([]byte, error) {
 	if "" == crypt {
 		return nil, errors.New("invalid encrypted text")
 	}

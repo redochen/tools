@@ -6,21 +6,8 @@ import (
 	"encoding/hex"
 )
 
-var (
-	CcHmac = NewHmacHelper()
-)
-
-//Hmac帮助类
-type HmacHelper struct {
-}
-
-//获取一个新的HmacHelper实例
-func NewHmacHelper() *HmacHelper {
-	return &HmacHelper{}
-}
-
-//获取摘要
-func (h *HmacHelper) Sum(key, plain string) string {
+//HmacSum get hmac summary
+func HmacSum(key, plain string) string {
 	if "" == plain {
 		return ""
 	}

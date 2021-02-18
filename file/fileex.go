@@ -9,22 +9,22 @@ import (
 	"path/filepath"
 )
 
-//文件扩展类
-type FileEx struct {
+//Helper 文件帮助类
+type Helper struct {
 	os.File
 	Path    string
 	AbsPath string
 	Handle  *os.File
 }
 
-//打开文件
-func Open(path string, createIfNotExists, appendMode bool) (*FileEx, error) {
-	fe := &FileEx{}
+//Open 打开文件
+func Open(path string, createIfNotExists, appendMode bool) (*Helper, error) {
+	fe := &Helper{}
 	_, err := fe.Open(path, createIfNotExists, appendMode)
 	return fe, err
 }
 
-//获取绝对路径
+//GetAbsPath 获取绝对路径
 func GetAbsPath(path string) string {
 	absPath, _ := filepath.Abs(path)
 	return absPath
@@ -63,243 +63,249 @@ func GetAbsPath(path string) string {
 //
 //    ModePerm FileMode = 0777 // permission bits
 //)
-//上述可选值是权限位的高有效位，低有效位的值还是要用户自己写数字。
-func (f *FileEx) openFile(path string, createIfNotExists, appendMode bool) (*os.File, error) {
-	f.AbsPath = GetAbsPath(path)
+//openFile 上述可选值是权限位的高有效位，低有效位的值还是要用户自己写数字。
+func (h *Helper) openFile(path string, createIfNotExists, appendMode bool) (*os.File, error) {
+	h.AbsPath = GetAbsPath(path)
 
-	if !f.IsExist(f.AbsPath) {
+	if !h.IsExist(h.AbsPath) {
 		if !createIfNotExists {
-			return nil, errors.New(fmt.Sprintf("[openFile] file《%s》does not exist", f.AbsPath))
+			return nil, fmt.Errorf("[openFile] file《%s》does not exist", h.AbsPath)
 		}
 
-		file, err := os.Create(f.AbsPath)
+		file, err := os.Create(h.AbsPath)
 		if file != nil {
-			f.Path = path
-			f.Handle = file
-		}
-		return file, err
-	} else {
-		mode := os.O_RDWR
-		if appendMode {
-			mode += os.O_APPEND
-		} else {
-			mode += os.O_TRUNC
+			h.Path = path
+			h.Handle = file
 		}
 
-		file, err := os.OpenFile(f.AbsPath, mode, 0660)
-		if file != nil {
-			f.Path = path
-			f.Handle = file
-		}
 		return file, err
 	}
-}
 
-//打开文件
-func (f *FileEx) Open(path string, createIfNotExists, appendMode bool) (*os.File, error) {
-	if f.Handle != nil {
-		absPath := GetAbsPath(path)
-
-		if f.AbsPath == absPath {
-			return f.Handle, nil
-		} else {
-			err := f.Close()
-			if err != nil {
-				return nil, err
-			} else {
-				return f.openFile(path, createIfNotExists, appendMode)
-			}
-		}
+	mode := os.O_RDWR
+	if appendMode {
+		mode += os.O_APPEND
 	} else {
-		return f.openFile(path, createIfNotExists, appendMode)
+		mode += os.O_TRUNC
 	}
+
+	file, err := os.OpenFile(h.AbsPath, mode, 0660)
+	if file != nil {
+		h.Path = path
+		h.Handle = file
+	}
+
+	return file, err
 }
 
-//关闭文件
-func (f *FileEx) Close() error {
-	if nil == f.Handle {
+//Open 打开文件
+func (h *Helper) Open(path string, createIfNotExists, appendMode bool) (*os.File, error) {
+	if nil == h.Handle {
+		return h.openFile(path, createIfNotExists, appendMode)
+	}
+
+	absPath := GetAbsPath(path)
+	if h.AbsPath == absPath {
+		return h.Handle, nil
+	}
+
+	err := h.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return h.openFile(path, createIfNotExists, appendMode)
+}
+
+//Close 关闭文件
+func (h *Helper) Close() error {
+	if nil == h.Handle {
 		return errors.New("文件句柄为空")
 	}
-	err := f.Handle.Close()
+
+	err := h.Handle.Close()
 	if nil == err {
-		f.Handle = nil
-		f.Path = ""
-		f.AbsPath = ""
+		h.Handle = nil
+		h.Path = ""
+		h.AbsPath = ""
 	}
+
 	return err
 }
 
-//删除文件
-func (f *FileEx) Remove() error {
-	if "" == f.AbsPath {
+//Remove 删除文件
+func (h *Helper) Remove() error {
+	if "" == h.AbsPath {
 		return errors.New("文件路径为空")
 	}
 
-	f.Close()
+	h.Close()
 
-	return os.Remove(f.AbsPath)
+	return os.Remove(h.AbsPath)
 }
 
-//获取文件信息
-func (f *FileEx) Info() (os.FileInfo, error) {
-	if "" == f.AbsPath {
+//Info 获取文件信息
+func (h *Helper) Info() (os.FileInfo, error) {
+	if "" == h.AbsPath {
 		return nil, errors.New("文件路径为空")
-	} else {
-		return os.Stat(f.AbsPath)
 	}
+
+	return os.Stat(h.AbsPath)
 }
 
-//获取文件的创建时间
-func (f *FileEx) CreateTime() (int64, error) {
-	fi, err := f.Info()
+//CreateTime 获取文件的创建时间
+func (h *Helper) CreateTime() (int64, error) {
+	fi, err := h.Info()
 	if err != nil {
 		return 0, err
-	} else {
-		return fi.ModTime().Unix(), nil
 	}
+
+	return fi.ModTime().Unix(), nil
 }
 
-//获取文件大小
-func (f *FileEx) Size() (int64, error) {
-	fi, err := f.Info()
+//Size 获取文件大小
+func (h *Helper) Size() (int64, error) {
+	fi, err := h.Info()
 	if err != nil {
 		return 0, err
-	} else {
-		return fi.Size(), nil
 	}
+
+	return fi.Size(), nil
 }
 
-//重命名文件
-func (f *FileEx) Rename(newPath string) error {
+//Rename 重命名文件
+func (h *Helper) Rename(newPath string) error {
 	newAbsPath := GetAbsPath(newPath)
-	err := os.Rename(f.AbsPath, newAbsPath)
+	err := os.Rename(h.AbsPath, newAbsPath)
 	if nil == err {
-		f.Path = newPath
-		f.AbsPath = newAbsPath
+		h.Path = newPath
+		h.AbsPath = newAbsPath
 	}
+
 	return err
 }
 
-//判断文件是否存在
-func (f *FileEx) IsExist(path string) bool {
+//IsExist 判断文件是否存在
+func (h *Helper) IsExist(path string) bool {
 	_, err := os.Stat(GetAbsPath(path))
 	return nil == err || os.IsExist(err)
 }
 
-//判断是否为文件
-func (f *FileEx) IsFile(path string) bool {
+//IsFile 判断是否为文件
+func (h *Helper) IsFile(path string) bool {
 	file, err := os.Stat(GetAbsPath(path))
 	if err != nil {
 		return false
 	}
+
 	return !file.IsDir()
 }
 
-//读取文件
-func (f *FileEx) ReadEx(buff []byte, offset int64, unzipFile bool) (int, error) {
-	if f.Handle != nil {
-		if unzipFile {
-			gr, err := f.newGzipReader()
-			if err != nil {
-				return 0, err
-			}
-
-			defer gr.Close()
-			return gr.Read(buff)
-		} else {
-			if offset > 0 {
-				return f.Handle.ReadAt(buff, offset)
-			} else {
-				return f.Handle.Read(buff)
-			}
-		}
-	} else {
+//ReadEx 读取文件
+func (h *Helper) ReadEx(buff []byte, offset int64, unzipFile bool) (int, error) {
+	if nil == h.Handle {
 		return 0, errors.New("文件句柄为空")
 	}
-}
 
-//将字符串写入文件
-func (f *FileEx) WriteStringEx(content string) (int, error) {
-	if f.Handle != nil {
-		return f.Handle.WriteString(content)
-	} else {
-		return 0, errors.New("文件句柄为空")
-	}
-}
-
-//写入文件：zipFile - 是否压缩文件
-func (f *FileEx) WriteEx(data []byte, offset int64, zipFile bool) (int, error) {
-	if f.Handle != nil {
-		if zipFile {
-			gw, err := f.newGzipWriter()
-			if err != nil {
-				return 0, err
-			}
-			defer gw.Close()
-			return gw.Write(data[offset:])
-		} else {
-			if offset > 0 {
-				return f.Handle.WriteAt(data, offset)
-			} else {
-				return f.Handle.Write(data)
-			}
+	if unzipFile {
+		gr, err := h.newGzipReader()
+		if err != nil {
+			return 0, err
 		}
 
-	} else {
+		defer gr.Close()
+		return gr.Read(buff)
+	}
+
+	if offset > 0 {
+		return h.Handle.ReadAt(buff, offset)
+	}
+
+	return h.Handle.Read(buff)
+}
+
+//WriteStringEx 将字符串写入文件
+func (h *Helper) WriteStringEx(content string) (int, error) {
+	if nil == h.Handle {
 		return 0, errors.New("文件句柄为空")
 	}
+
+	return h.Handle.WriteString(content)
+}
+
+//WriteEx 写入文件：zipFile - 是否压缩文件
+func (h *Helper) WriteEx(data []byte, offset int64, zipFile bool) (int, error) {
+	if nil == h.Handle {
+		return 0, errors.New("文件句柄为空")
+	}
+
+	if zipFile {
+		gw, err := h.newGzipWriter()
+		if err != nil {
+			return 0, err
+		}
+
+		defer gw.Close()
+		return gw.Write(data[offset:])
+	}
+
+	if offset > 0 {
+		return h.Handle.WriteAt(data, offset)
+	}
+
+	return h.Handle.Write(data)
 }
 
 //创建Gzip压缩的读取流
-func (f *FileEx) newGzipReader() (*gzip.Reader, error) {
-	if nil == f.Handle {
+func (h *Helper) newGzipReader() (*gzip.Reader, error) {
+	if nil == h.Handle {
 		return nil, errors.New("文件句柄为空")
-	} else {
-		return gzip.NewReader(f.Handle)
 	}
+
+	return gzip.NewReader(h.Handle)
 }
 
 //创建Gzip压缩的写入流
-func (f *FileEx) newGzipWriter() (*gzip.Writer, error) {
-	if nil == f.Handle {
+func (h *Helper) newGzipWriter() (*gzip.Writer, error) {
+	if nil == h.Handle {
 		return nil, errors.New("文件句柄为空")
-	} else {
-		gw := gzip.NewWriter(f.Handle)
-		return gw, nil
 	}
+
+	gw := gzip.NewWriter(h.Handle)
+	return gw, nil
 }
 
 //创建Gzip.Tar压缩的读取流
-func (f *FileEx) newGzipTarReader() (*gzip.Reader, *tar.Reader, error) {
-	if nil == f.Handle {
+func (h *Helper) newGzipTarReader() (*gzip.Reader, *tar.Reader, error) {
+	if nil == h.Handle {
 		return nil, nil, errors.New("文件句柄为空")
-	} else {
-		gr, err := gzip.NewReader(f.Handle)
-		if err != nil {
-			return nil, nil, err
-		} else {
-			tr := tar.NewReader(gr)
-			return gr, tr, nil
-		}
 	}
+
+	gr, err := gzip.NewReader(h.Handle)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	tr := tar.NewReader(gr)
+	return gr, tr, nil
 }
 
 //创建Gzip.Tar压缩的写入流
-func (f *FileEx) newGzipTarWriter() (*gzip.Writer, *tar.Writer, *tar.Header, error) {
-	if nil == f.Handle {
+func (h *Helper) newGzipTarWriter() (*gzip.Writer, *tar.Writer, *tar.Header, error) {
+	if nil == h.Handle {
 		return nil, nil, nil, errors.New("文件句柄为空")
-	} else {
-		fi, err := f.Info()
-		if err != nil {
-			return nil, nil, nil, err
-		} else {
-			gw := gzip.NewWriter(f.Handle)
-			tw := tar.NewWriter(gw)
-			h := &tar.Header{Name: fi.Name(),
-				Size:    fi.Size(),
-				ModTime: fi.ModTime(),
-				Mode:    int64(fi.Mode())}
-			return gw, tw, h, nil
-		}
 	}
+
+	fi, err := h.Info()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	gw := gzip.NewWriter(h.Handle)
+	tw := tar.NewWriter(gw)
+	head := &tar.Header{Name: fi.Name(),
+		Size:    fi.Size(),
+		ModTime: fi.ModTime(),
+		Mode:    int64(fi.Mode())}
+
+	return gw, tw, head, nil
 }

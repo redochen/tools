@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/redochen/tools/crypto"
+	"github.com/redochen/tools/crypto"
 )
 
 var (
@@ -283,7 +283,7 @@ func HttpsBasicAuthorization(username, password string) (string, error) {
 		return "", nil
 	}
 
-	auth, err := CcBase64.EncodeString(username + ":" + password)
+	auth, err := crypto.Base64EncodeString(username + ":" + password)
 	if err != nil {
 		return "", err
 	}

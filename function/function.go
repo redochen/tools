@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/redochen/tools/log"
+	"github.com/redochen/tools/log"
 )
 
 //GetFunctionName 获取函数名称

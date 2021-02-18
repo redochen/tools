@@ -7,31 +7,18 @@ import (
 	"io/ioutil"
 )
 
-var (
-	CcGzip = NewGZipHelper()
-)
-
-//GZip帮助类
-type GZipHelper struct {
+//BestZip 压缩字符串（最好压缩比例）
+func BestZip(s string) ([]byte, error) {
+	return ZipData([]byte(s), gzip.BestCompression)
 }
 
-//获取一个新的GZipHelper实例
-func NewGZipHelper() *GZipHelper {
-	return &GZipHelper{}
+//FastZip 压缩字符串（最快压缩速度）
+func FastZip(s string) ([]byte, error) {
+	return ZipData([]byte(s), gzip.BestSpeed)
 }
 
-//压缩字符串（最好压缩比例）
-func (h *GZipHelper) BestZip(s string) ([]byte, error) {
-	return h.ZipData([]byte(s), gzip.BestCompression)
-}
-
-//压缩字符串（最快压缩速度）
-func (h *GZipHelper) FastZip(s string) ([]byte, error) {
-	return h.ZipData([]byte(s), gzip.BestSpeed)
-}
-
-//压缩数据
-func (h *GZipHelper) ZipData(data []byte, level int) ([]byte, error) {
+//ZipData 压缩数据
+func ZipData(data []byte, level int) ([]byte, error) {
 	if nil == data || len(data) <= 0 {
 		return nil, errors.New("input buffer is nil or empty")
 	}
@@ -56,18 +43,18 @@ func (h *GZipHelper) ZipData(data []byte, level int) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-//解压缩字符串
-func (h *GZipHelper) Unzip(data []byte) (string, error) {
-	b, err := h.UnzipData(data)
+//Unzip 解压缩字符串
+func Unzip(data []byte) (string, error) {
+	b, err := UnzipData(data)
 	if b != nil && len(b) > 0 {
 		return string(b), nil
-	} else {
-		return "", err
 	}
+
+	return "", err
 }
 
-//解压缩数据
-func (h *GZipHelper) UnzipData(data []byte) ([]byte, error) {
+//UnzipData 解压缩数据
+func UnzipData(data []byte) ([]byte, error) {
 	if nil == data || len(data) <= 0 {
 		return nil, errors.New("input buffer is nil or empty")
 	}
