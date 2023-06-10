@@ -5,11 +5,33 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
-//Get GET方式请求URL
+const (
+	DefaultTimeout = 30 * time.Second
+)
+
+// Get GET方式请求URL（默认30秒超时）
 func Get(url string) (string, error) {
-	resp, err := http.Get(url)
+	return GetEx(url, "", DefaultTimeout)
+}
+
+// Get GET方式请求URL（可设置超时）
+func GetEx(url, parameter string, timeout time.Duration) (string, error) {
+	if timeout == 0 {
+		timeout = DefaultTimeout
+	}
+
+	client := &http.Client{
+		Timeout: timeout,
+	}
+
+	if parameter != "" {
+		url = fmt.Sprintf("%s%s", url, parameter)
+	}
+
+	resp, err := client.Get(url)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -26,20 +48,19 @@ func Get(url string) (string, error) {
 	return body, err
 }
 
-//GetEx GET方式请求URL
-func GetEx(url, parameter string) (string, error) {
-	return Get(fmt.Sprintf("%s%s", url, parameter))
-}
-
-//Post POST方式请求URL
-func Post(url, parameter string, contentType ContentType) (string, error) {
+// Post POST方式请求URL
+func Post(url, parameter string, timeout time.Duration, contentType ContentType) (string, error) {
 	reader := bytes.NewBufferString(parameter)
-	return PostEx(url, reader, contentType)
+	return PostEx(url, reader, timeout, contentType)
 }
 
-//PostEx POST方式请求URL
-func PostEx(url string, reader io.Reader, contentType ContentType) (string, error) {
-	resp, err := http.Post(url, contentType.String(), reader)
+// PostEx POST方式请求URL
+func PostEx(url string, reader io.Reader, timeout time.Duration, contentType ContentType) (string, error) {
+	client := &http.Client{
+		Timeout: timeout,
+	}
+
+	resp, err := client.Post(url, contentType.String(), reader)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
