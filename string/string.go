@@ -15,113 +15,180 @@ var (
 	romanSymbols = []string{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
 )
 
-//FormatBool 格式化输入bool
+// IsStringValid 判断字符串是否非空
+func IsStringValid(str string) bool {
+	return str != ""
+}
+
+// IsStringListValid 判断字符串数组是否有效
+func IsStringListValid(array []string) bool {
+	if array == nil || len(array) == 0 {
+		return false
+	}
+
+	for _, str := range array {
+		if !IsStringValid(str) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// DistinctStringList 字符串数组去重
+func DistinctStringList(array []string) []string {
+	if array == nil || len(array) == 0 {
+		return nil
+	}
+
+	var newArray []string
+	flags := make(map[string]bool)
+
+	for _, str := range array {
+		if !flags[str] {
+			flags[str] = true
+			newArray = append(newArray, str)
+		}
+	}
+
+	return newArray
+}
+
+// SplitString 切割字符串
+func SplitString(str string, separators ...string) []string {
+	return SplitStringEx(str, false, separators...)
+}
+
+// SplitStringEx 切割字符串
+func SplitStringEx(str string, removeEmptyString bool, separators ...string) []string {
+	if str == "" {
+		return nil
+	}
+
+	array := []string{str}
+
+	for _, sep := range separators {
+		var tempArray []string
+		for _, str := range array {
+			for _, tmp := range strings.Split(str, sep) {
+				if !removeEmptyString || IsStringValid(str) {
+					tempArray = append(tempArray, tmp)
+				}
+			}
+		}
+		array = tempArray
+	}
+
+	return array
+}
+
+// FormatBool 格式化输入bool
 func FormatBool(b bool) string {
 	return strconv.FormatBool(b)
 }
 
-//ParseBool 解析bool值
+// ParseBool 解析bool值
 func ParseBool(s string) bool {
 	b, _ := strconv.ParseBool(s)
 	return b
 }
 
-//FormatInt 格式化输出int值
+// FormatInt 格式化输出int值
 func FormatInt(i int) string {
 	return strconv.FormatInt(int64(i), 10)
 }
 
-//FormatInt32 格式化输出int32值
+// FormatInt32 格式化输出int32值
 func FormatInt32(i int32) string {
 	return strconv.FormatInt(int64(i), 10)
 }
 
-//FormatInt64 格式化输出int64值
+// FormatInt64 格式化输出int64值
 func FormatInt64(i int64) string {
 	return strconv.FormatInt(i, 10)
 }
 
-//ParseInt 解析int值
+// ParseInt 解析int值
 func ParseInt(s string) int {
 	i, _ := strconv.ParseInt(s, 10, 32)
 	return int(i)
 }
 
-//ParseInt32 解析int32值
+// ParseInt32 解析int32值
 func ParseInt32(s string) int32 {
 	i, _ := strconv.ParseInt(s, 10, 32)
 	return int32(i)
 }
 
-//ParseInt64 解析int64值
+// ParseInt64 解析int64值
 func ParseInt64(s string) int64 {
 	i, _ := strconv.ParseInt(s, 10, 64)
 	return i
 }
 
-//FormatUint 格式化输出uint值
+// FormatUint 格式化输出uint值
 func FormatUint(u uint) string {
 	return strconv.FormatUint(uint64(u), 10)
 }
 
-//FormatUint32 格式化输出uint32值
+// FormatUint32 格式化输出uint32值
 func FormatUint32(u uint32) string {
 	return strconv.FormatUint(uint64(u), 10)
 }
 
-//FormatUint64 格式化输出uint64值
+// FormatUint64 格式化输出uint64值
 func FormatUint64(u uint64) string {
 	return strconv.FormatUint(u, 10)
 }
 
-//ParseUint 解析uint值
+// ParseUint 解析uint值
 func ParseUint(s string) uint {
 	u, _ := strconv.ParseUint(s, 10, 64)
 	return uint(u)
 }
 
-//ParseUint32 解析uint32值
+// ParseUint32 解析uint32值
 func ParseUint32(s string) uint32 {
 	u, _ := strconv.ParseUint(s, 10, 64)
 	return uint32(u)
 }
 
-//ParseUint64 解析uint64值
+// ParseUint64 解析uint64值
 func ParseUint64(s string) uint64 {
 	u, _ := strconv.ParseUint(s, 10, 64)
 	return u
 }
 
-//FormatFloat 格式化输出float值
+// FormatFloat 格式化输出float值
 func FormatFloat(f float32) string {
 	return strconv.FormatFloat(float64(f), 'f', -1, 32)
 
 }
 
-//FormatFloat64 格式化输出float64值
+// FormatFloat64 格式化输出float64值
 func FormatFloat64(f float64) string {
 	return strconv.FormatFloat(f, 'f', -1, 64)
 }
 
-//ParseFloat 解析float值
+// ParseFloat 解析float值
 func ParseFloat(s string) float32 {
 	f, _ := strconv.ParseFloat(s, 32)
 	return float32(f)
 }
 
-//ParseFloat64 解析float64值
+// ParseFloat64 解析float64值
 func ParseFloat64(s string) float64 {
 	f, _ := strconv.ParseFloat(s, 64)
 	return f
 }
 
-//FormatTime 格式化输出DateTime值，格式为：yyyy-MM-dd HH:mm:ss
+// FormatTime 格式化输出DateTime值，格式为：yyyy-MM-dd HH:mm:ss
 func FormatTime(t time.Time, format string) string {
 	layout := TimeFormatToLayout(format)
 	return t.Format(layout)
 }
 
-//ParseTime 解析DateTime值，格式为：yyyy-MM-dd HH:mm:ss
+// ParseTime 解析DateTime值，格式为：yyyy-MM-dd HH:mm:ss
 func ParseTime(s, format string, utc bool) time.Time {
 	layout := TimeFormatToLayout(format)
 	if utc {
@@ -133,7 +200,7 @@ func ParseTime(s, format string, utc bool) time.Time {
 	return t
 }
 
-//ParseTimeEx 从字符串中解析，解析失败时返回默认值
+// ParseTimeEx 从字符串中解析，解析失败时返回默认值
 func ParseTimeEx(s, format string, utc bool, defaultTime time.Time) time.Time {
 	t := ParseTime(s, format, utc)
 	if t.IsZero() {
@@ -143,7 +210,7 @@ func ParseTimeEx(s, format string, utc bool, defaultTime time.Time) time.Time {
 	return t
 }
 
-//ToString 转换成字符串
+// ToString 转换成字符串
 func ToString(i interface{}) string {
 	switch i.(type) {
 	case int:
@@ -175,7 +242,7 @@ func ToString(i interface{}) string {
 	}
 }
 
-//ChangeDateTimeFormat 转换日期时间格式
+// ChangeDateTimeFormat 转换日期时间格式
 func ChangeDateTimeFormat(dateTime, srcFormat, dstFormat string) string {
 	dt := ParseTime(dateTime, srcFormat, true)
 	if dt.IsZero() {
@@ -185,7 +252,7 @@ func ChangeDateTimeFormat(dateTime, srcFormat, dstFormat string) string {
 	return FormatTime(dt, dstFormat)
 }
 
-//TimeFormatToLayout 将格式为：yyyy-MM-dd HH:mm:ss 转换 "2006-01-02 15:04:05"
+// TimeFormatToLayout 将格式为：yyyy-MM-dd HH:mm:ss 转换 "2006-01-02 15:04:05"
 func TimeFormatToLayout(format string) string {
 	layout := format
 	layout = strings.Replace(layout, "yyyy", "2006", -1)
@@ -216,7 +283,7 @@ func TimeFormatToLayout(format string) string {
 	return layout
 }
 
-//TrimSpace 字符串去掉空格
+// TrimSpace 字符串去掉空格
 func TrimSpace(text string) string {
 	if "" == text || len(text) < 0 {
 		return ""
@@ -225,7 +292,7 @@ func TrimSpace(text string) string {
 	return strings.TrimSpace(text)
 }
 
-//ReplaceAll 字符串替换
+// ReplaceAll 字符串替换
 func ReplaceAll(s, new string, old ...string) string {
 	if "" == s || nil == old || len(old) <= 0 {
 		return s
@@ -240,31 +307,31 @@ func ReplaceAll(s, new string, old ...string) string {
 	return str
 }
 
-//SubString 获取子字符串
+// SubString 获取子字符串
 func SubString(str string, begin, length int) (substr string) {
 	// 将字符串的转换成[]rune
 	rs := []rune(str)
-	len := len(rs)
+	strLen := len(rs)
 
 	// 简单的越界判断
 	if begin < 0 {
 		begin = 0
 	}
 
-	if begin >= len {
-		begin = len
+	if begin >= strLen {
+		begin = strLen
 	}
 
 	end := begin + length
-	if end > len {
-		end = len
+	if end > strLen {
+		end = strLen
 	}
 
 	// 返回子串
 	return string(rs[begin:end])
 }
 
-//NewGUID 获取Guid
+// NewGUID 获取Guid
 func NewGUID() (string, error) {
 	guid := make([]byte, 16)
 	n, err := io.ReadFull(rand.Reader, guid)
@@ -278,7 +345,7 @@ func NewGUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", guid[0:4], guid[4:6], guid[6:8], guid[8:10], guid[10:]), nil
 }
 
-//FirstValid 获取第一个有效的字符串
+// FirstValid 获取第一个有效的字符串
 func FirstValid(strArray ...string) string {
 	if nil == strArray || len(strArray) <= 0 {
 		return ""
@@ -295,11 +362,11 @@ func FirstValid(strArray ...string) string {
 	return str
 }
 
-//IntToRoman 将整数转换成罗马数字
+// IntToRoman 将整数转换成罗马数字
 func IntToRoman(num int) string {
 	symbols := make([]string, 0)
-	len := len(romanValues)
-	for i := 0; i < len && num >= 0; i++ {
+	length := len(romanValues)
+	for i := 0; i < length && num >= 0; i++ {
 		value := romanValues[i]
 		for {
 			if value > num {
@@ -314,18 +381,18 @@ func IntToRoman(num int) string {
 	return strings.Join(symbols, "")
 }
 
-//RomanToInt 将罗马数字转成整数
+// RomanToInt 将罗马数字转成整数
 func RomanToInt(str string) int {
 	if "" == str {
 		return 0
 	}
 
-	len := len(str)
+	length := len(str)
 	symbols := []rune(str)
 	preNum := getRomanValue(symbols[0])
 	sum := 0
 
-	for i := 1; i < len; i++ {
+	for i := 1; i < length; i++ {
 		curNum := getRomanValue(symbols[i])
 		if preNum < curNum {
 			sum -= preNum

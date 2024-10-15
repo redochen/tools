@@ -1,75 +1,100 @@
 package http
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 )
 
 const (
-	DefaultTimeout = 30 * time.Second
+	HttpGet        = "GET"
+	HttpPost       = "POST"
+	HttpPut        = "PUT"
+	HttpDelete     = "DELETE"
+	DefaultTimeout = time.Duration(30) * time.Second
 )
 
 // Get GET方式请求URL（默认30秒超时）
 func Get(url string) (string, error) {
-	return GetEx(url, "", DefaultTimeout)
+	return GetEx(url, nil)
 }
 
-// Get GET方式请求URL（可设置超时）
-func GetEx(url, parameter string, timeout time.Duration) (string, error) {
-	if timeout == 0 {
-		timeout = DefaultTimeout
-	}
-
-	client := &http.Client{
-		Timeout: timeout,
-	}
-
-	if parameter != "" {
-		url = fmt.Sprintf("%s%s", url, parameter)
-	}
-
-	resp, err := client.Get(url)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-
-	if err != nil {
-		return "", err
-	}
-
-	if resp.StatusCode != 200 {
-		return fmt.Sprintf("StatusCode=%d", resp.StatusCode), err
-	}
-
-	body, err := GetBody(resp)
-	return body, err
+// GetEx GET方式请求URL
+func GetEx(url string, option *HttpOption) (string, error) {
+	return DoEx(url, HttpGet, option)
 }
 
 // Post POST方式请求URL
-func Post(url, parameter string, timeout time.Duration, contentType ContentType) (string, error) {
-	reader := bytes.NewBufferString(parameter)
-	return PostEx(url, reader, timeout, contentType)
+func Post(url, parameter string, contentType ContentType) (string, error) {
+	option := NewHttpOption(parameter, contentType)
+	return PostEx(url, option)
 }
 
 // PostEx POST方式请求URL
-func PostEx(url string, reader io.Reader, timeout time.Duration, contentType ContentType) (string, error) {
+func PostEx(url string, option *HttpOption) (string, error) {
+	return DoEx(url, HttpPost, option)
+}
+
+// Put PUT方式请求URL
+func Put(url, parameter string, contentType ContentType) (string, error) {
+	option := NewHttpOption(parameter, contentType)
+	return PutEx(url, option)
+}
+
+// PutEx PUT方式请求URL
+func PutEx(url string, option *HttpOption) (string, error) {
+	return DoEx(url, HttpPut, option)
+}
+
+// Delete DELETE方式请求URL
+func Delete(url string) (string, error) {
+	return DeleteEx(url, nil)
+}
+
+// DeleteEx DELETE方式请求URL
+func DeleteEx(url string, option *HttpOption) (string, error) {
+	return DoEx(url, HttpDelete, option)
+}
+
+// DoEx 请求URL
+func DoEx(url, method string, option *HttpOption) (string, error) {
+	opt := EnsureHttpOption(option)
+
 	client := &http.Client{
-		Timeout: timeout,
+		Timeout: opt.Timeout,
 	}
 
-	resp, err := client.Post(url, contentType.String(), reader)
+	var req *http.Request
+	var err error
+
+	if method == HttpGet || method == HttpDelete {
+		if opt.Parameter != "" {
+			url = fmt.Sprintf("%s%s", url, opt.Parameter)
+		}
+
+		req, err = http.NewRequest(method, url, nil)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		req, err = http.NewRequest(method, url, opt.GetParameterReader())
+		if err != nil {
+			return "", err
+		}
+
+		req.Header.Set("Content-Type", opt.ContentType.String())
+	}
+
+	resp, err := client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
 
-	if err != nil {
+	if err != nil || resp == nil {
 		return "", err
 	}
 
-	if resp.StatusCode != 200 {
+	if !opt.IgnoreStatusCode && resp.StatusCode != 200 {
 		return fmt.Sprintf("StatusCode=%d", resp.StatusCode), err
 	}
 
