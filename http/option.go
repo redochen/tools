@@ -2,6 +2,8 @@ package http
 
 import (
 	"bytes"
+	"errors"
+	CcJson "github.com/redochen/tools/json"
 	"io"
 	"time"
 )
@@ -45,6 +47,23 @@ func EnsureHttpOption(option *HttpOption) *HttpOption {
 	}
 
 	return option
+}
+
+// SetJsonParameter 设置JSON格式参数
+func (option *HttpOption) SetJsonParameter(data interface{}) error {
+	if data == nil {
+		return errors.New("data is nil")
+	}
+
+	json, err := CcJson.Serialize(data)
+	if err != nil {
+		return err
+	}
+
+	option.Parameter = json
+	option.ContentType = ApplicationJSON
+
+	return nil
 }
 
 // GetParameterReader 获取参数读取器实例
